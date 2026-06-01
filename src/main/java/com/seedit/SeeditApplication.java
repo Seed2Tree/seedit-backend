@@ -1,4 +1,4 @@
-package com.seedit.seedit;
+package com.seedit;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
