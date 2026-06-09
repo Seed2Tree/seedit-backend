@@ -1,6 +1,7 @@
 package com.seedit.health;
 
 import com.seedit.global.response.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,6 +16,7 @@ import java.util.Map;
 /** GET /api/health -> 서버/DB 상태 확인 (인증 불필요, 연결 스모크 테스트용) */
 @RestController
 @RequestMapping("/api/health")
+@Tag(name="기초세팅 TEST")
 public class HealthController {
 
     private final DataSource dataSource;

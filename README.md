@@ -57,16 +57,29 @@ com.seedit
 ├── SeeditApplication.java
 │
 ├── global                       # 전 도메인이 공유하는 공통 레이어
+│   ├── auth                     # 인증, 인가, 토큰, 회원가입 통합 관리 영역
+│   │   ├── config
+│   │   │   └── SecurityConfig.java         # Security 설정 
+│   │   ├── controller
+│   │   │   └── AuthController.java         # 로그인, 회원가입 API 통합
+│   │   ├── service
+│   │   │   ├── AuthService.java            # 로그인, 로그아웃, 토큰 발급 로직
+│   │   │   └── CustomUserDetailsService.java
+│   │   ├── security
+│   │   │   ├── JwtTokenProvider.java
+│   │   │   ├── JwtAuthenticationFilter.java
+│   │   │   └── CustomUserDetails.java
+│   │   └── dto
+│   │       ├── request
+│   │       │   ├── SignUpRequest.java      # 회원가입 요청 DTO
+│   │       │   └── LoginRequest.java       # 로그인 요청 DTO
+│   │       └── response
+│   │           └── LoginResponse.java      # 토큰 반환 DTO
+│   │
 │   ├── config
-│   │   ├── SecurityConfig.java
 │   │   ├── WebConfig.java
 │   │   ├── CorsConfig.java
 │   │   └── AiConfig.java
-│   ├── security                 # JWT 인증 뼈대
-│   │   ├── JwtTokenProvider.java
-│   │   ├── JwtAuthenticationFilter.java
-│   │   ├── CustomUserDetails.java
-│   │   └── CustomUserDetailsService.java
 │   ├── error
 │   │   ├── GlobalExceptionHandler.java
 │   │   ├── BusinessException.java
@@ -75,83 +88,79 @@ com.seedit
 │   │   ├── ApiResponse.java
 │   │   └── PageResponse.java
 │   └── util
+│       ├── JWTUtil.java
 │       ├── DateUtils.java
 │       └── MoneyUtils.java
 │
-├── domain                       # 기능 도메인 (controller/service/mapper/model/dto)
-│   ├── auth                     # 회원가입, 로그인, 로그아웃, 로그인 사용자 정보
-│   │   ├── controller/AuthController.java
-│   │   ├── service/AuthService.java
-│   │   └── dto/{SignupRequest, LoginRequest, LoginResponse, AuthUserResponse}.java
-│   │
+├── feature                       # 기능 도메인 (controller/service/repository/domain)
 │   ├── user                     # 프로필, 내 정보, 활동 요약
 │   │   ├── controller/UserController.java
-│   │   ├── service/UserService.java
-│   │   ├── mapper/UserAccountMapper.java
-│   │   ├── model/UserAccount.java
+│   │   ├── service/{UserService, UserServiceImpl}.java
+│   │   ├── repository/UserAccountrepository.java
+│   │   ├── domain/UserAccount.java
 │   │   └── dto/{UserProfileResponse, UserSummaryResponse}.java
 │   │
 │   ├── level                    # 레벨, 포인트, 다음 레벨 조건
 │   │   ├── controller/LevelController.java
 │   │   ├── service/LevelService.java
-│   │   ├── mapper/{UserLevelMapper, LevelDefinitionMapper}.java
-│   │   ├── model/{UserLevel, LevelDefinition}.java
+│   │   ├── repository/{UserLevelrepository, LevelDefinitionrepository}.java
+│   │   ├── domain/{UserLevel, LevelDefinition}.java
 │   │   └── dto/LevelResponse.java
 │   │
 │   ├── balance                  # 잔액 변동 이력
 │   │   ├── controller/BalanceHistoryController.java
 │   │   ├── service/BalanceHistoryService.java
-│   │   ├── mapper/BalanceHistoryMapper.java
-│   │   ├── model/BalanceHistory.java
+│   │   ├── repository/BalanceHistoryrepository.java
+│   │   ├── domain/BalanceHistory.java
 │   │   └── dto/BalanceHistoryResponse.java
 │   │
 │   ├── stock                    # 종목 리스트/상세, 일별 시세
 │   │   ├── controller/StockController.java
 │   │   ├── service/StockService.java
-│   │   ├── mapper/{StockMapper, StockDetailMapper}.java
-│   │   ├── model/{Stock, StockDetail}.java
+│   │   ├── repository/{Stockrepository, StockDetailrepository}.java
+│   │   ├── domain/{Stock, StockDetail}.java
 │   │   └── dto/{StockListResponse, StockDetailResponse, StockPriceResponse}.java
 │   │
 │   ├── trade                    # 모의 매수/매도, 거래 내역
 │   │   ├── controller/TradeController.java
 │   │   ├── service/TradeService.java
-│   │   ├── mapper/TransactionMapper.java
-│   │   ├── model/Transaction.java
+│   │   ├── repository/Transactionrepository.java
+│   │   ├── domain/Transaction.java
 │   │   └── dto/{BuyRequest, SellRequest, TradeResponse, TradeHistoryResponse}.java
 │   │
 │   ├── reason                   # 투자 가설 작성/목록, 복기
 │   │   ├── controller/ReasonController.java
 │   │   ├── service/ReasonService.java
-│   │   ├── mapper/ReasonMapper.java
-│   │   ├── model/Reason.java
+│   │   ├── repository/Reasonrepository.java
+│   │   ├── domain/Reason.java
 │   │   └── dto/{ReasonCreateRequest, ReasonResponse, ReasonVerifyRequest}.java
 │   │
 │   ├── portfolio                # 보유 종목, 포트폴리오 평가
 │   │   ├── controller/PortfolioController.java
 │   │   ├── service/PortfolioService.java
-│   │   ├── mapper/PortfolioMapper.java
-│   │   ├── model/Portfolio.java
+│   │   ├── repository/Portfoliorepository.java
+│   │   ├── domain/Portfolio.java
 │   │   └── dto/{PortfolioResponse, HoldingResponse}.java
 │   │
 │   ├── watchlist                # 관심 종목 등록/조회/삭제
 │   │   ├── controller/WatchlistController.java
 │   │   ├── service/WatchlistService.java
-│   │   ├── mapper/WatchlistMapper.java
-│   │   ├── model/Watchlist.java
+│   │   ├── repository/Watchlistrepository.java
+│   │   ├── domain/Watchlist.java
 │   │   └── dto/WatchlistResponse.java
 │   │
 │   ├── diary                    # 투자 일기 + AI 피드백
 │   │   ├── controller/DiaryController.java
 │   │   ├── service/DiaryService.java
-│   │   ├── mapper/DiaryMapper.java
-│   │   ├── model/Diary.java
+│   │   ├── repository/Diaryrepository.java
+│   │   ├── domain/Diary.java
 │   │   └── dto/{DiaryCreateRequest, DiaryUpdateRequest, DiaryResponse, DiaryAiFeedbackResponse}.java
 │   │
 │   ├── study                    # 금융 콘텐츠, 즐겨찾기
 │   │   ├── controller/StudyController.java
 │   │   ├── service/StudyService.java
-│   │   ├── mapper/{InvestmentStudyMapper, StudyBookmarkMapper}.java
-│   │   ├── model/{InvestmentStudy, StudyBookmark}.java
+│   │   ├── repository/{InvestmentStudyrepository, StudyBookmarkrepository}.java
+│   │   ├── domain/{InvestmentStudy, StudyBookmark}.java
 │   │   └── dto/{StudyListResponse, StudyDetailResponse, StudyBookmarkResponse}.java
 │   │
 │   ├── alert                    # 단타 경고 알림 (조회 전용, 저장 없음)
@@ -162,8 +171,8 @@ com.seedit
 │   └── report                   # AI 포트폴리오/데일리 리포트
 │       ├── controller/ReportController.java
 │       ├── service/{PortfolioReportService, DailyEconomicReportService}.java
-│       ├── mapper/AiDailyReportMapper.java
-│       ├── model/AiDailyReport.java
+│       ├── repository/AiDailyReportrepository.java
+│       ├── domain/AiDailyReport.java
 │       └── dto/{PortfolioReportResponse, DailyReportResponse, DailyReportRegenerateRequest}.java
 │
 └── external                     # 외부 연동 클라이언트
