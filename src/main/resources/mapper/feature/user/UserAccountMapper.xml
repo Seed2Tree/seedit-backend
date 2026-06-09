@@ -10,7 +10,7 @@
         userAccount 테이블에 새로운 사용자 정보를 추가합니다.
     -->
     <insert id="insertUser" parameterType="UserAccount">
-        INSERT user_account (username, password_hash, name, birth, email)
+        INSERT INTO user_account (username, password_hash, name, birth, email)
         VALUES (#{username}, #{passwordHash}, #{name}, #{birth}, #{email})
     </insert>
 

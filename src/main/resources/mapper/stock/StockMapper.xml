@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.seedit.feature.stock.StockMapper">
+
+    <select id="findAll" resultType="com.seedit.feature.stock.domain.Stock">
+        SELECT s.sid,
+               s.company_name,
+               s.ticker,
+               s.sector,
+               sd.current_price,
+               ROUND((sd.current_price - sd.open_price) / sd.open_price * 100, 2) AS change_rate,
+               (sd.current_price - sd.open_price)                                 AS change_price
+        FROM stock s
+        JOIN stock_detail sd ON s.sid = sd.sid
+        WHERE sd.trade_date = (
+            SELECT MAX(trade_date) FROM stock_detail WHERE sid = s.sid
+        )
+        ORDER BY s.company_name
+    </select>
+
+</mapper>

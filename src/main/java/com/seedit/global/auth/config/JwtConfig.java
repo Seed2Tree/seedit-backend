@@ -9,13 +9,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 public class JwtConfig {
-    @Value("${jwt.secret}")
+    @Value("${app.jwt.secret}")
     private String secret;
 
-    @Value("${jwt.access-expiration-ms}")
+    @Value("${app.jwt.access-expiration-ms}")
     private long accessTokenExpirationMs;
 
-    @Value("${jwt.refresh-expiration-ms}")
+    @Value("${app.jwt.refresh-expiration-ms}")
     private long refreshTokenExpirationMs;
 
     @Bean
