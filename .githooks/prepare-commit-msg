@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+#
+# prepare-commit-msg
+# 현재 브랜치 이름에서 Jira 키(예: SEED-23)를 뽑아
+# 커밋 메시지 제목 끝에 " - SEED-23" 형태로 자동으로 붙여줍니다.
+# (feature/SEED-23-buy-order  ->  "feat: ... - SEED-23")
+#
+# 설치(각자 1회):
+#   git config core.hooksPath .githooks
+#   chmod +x .githooks/prepare-commit-msg
+
+COMMIT_MSG_FILE="$1"
+COMMIT_SOURCE="$2"
+
+# merge / squash 자동 커밋에는 손대지 않음
+case "$COMMIT_SOURCE" in
+  merge|squash) exit 0 ;;
+esac
+
+BRANCH_NAME="$(git symbolic-ref --short HEAD 2>/dev/null || git rev-parse --abbrev-ref HEAD 2>/dev/null)"
+
+# 브랜치 이름에서 SEED-숫자 추출 (대소문자 무시 -> 대문자)
+ISSUE_KEY="$(printf '%s' "$BRANCH_NAME" | grep -oiE '[A-Z]+-[0-9]+' | head -n1 | tr '[:lower:]' '[:upper:]')"
+
+# main/develop/setting 등 키 없는 브랜치는 통과
+[ -z "$ISSUE_KEY" ] && exit 0
+
+# 이미 키가 들어 있으면 중복 방지
+if grep -qiE "$ISSUE_KEY" "$COMMIT_MSG_FILE"; then
+  exit 0
+fi
+
+# 첫 번째 '실제 제목 줄'(주석/빈줄 아님)을 찾아 끝에 " - KEY" 추가.
+# 제목 줄이 아직 없으면(대화형 빈 커밋) 안내 주석을 맨 위에 추가.
+awk -v key="$ISSUE_KEY" '
+  BEGIN { added=0; hastitle=0 }
+  {
+    lines[NR]=$0
+    if (!hastitle && $0 !~ /^#/ && $0 !~ /^[[:space:]]*$/) { titleline=NR; hastitle=1 }
+  }
+  END {
+    if (hastitle) {
+      for (i=1;i<=NR;i++) {
+        if (i==titleline) printf "%s - %s\n", lines[i], key
+        else print lines[i]
+      }
+    } else {
+      printf "# Jira: %s  (제목 끝에 \" - %s\" 를 붙여주세요)\n", key, key
+      for (i=1;i<=NR;i++) print lines[i]
+    }
+  }
+' "$COMMIT_MSG_FILE" > "$COMMIT_MSG_FILE.tmp" && mv "$COMMIT_MSG_FILE.tmp" "$COMMIT_MSG_FILE"
