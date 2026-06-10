@@ -2,9 +2,9 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.seedit.feature.stock.StockMapper">
+<mapper namespace="com.seedit.feature.stock.repository.StockRepository">
 
-    <select id="findAll" resultType="com.seedit.feature.stock.domain.Stock">
+    <select id="findAll" resultType="Stock">
         SELECT s.sid,
                s.company_name,
                s.ticker,

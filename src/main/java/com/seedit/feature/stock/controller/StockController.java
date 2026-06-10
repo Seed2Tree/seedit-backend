@@ -1,5 +1,6 @@
-package com.seedit.feature.stock;
+package com.seedit.feature.stock.controller;
 
+import com.seedit.feature.stock.service.StockService;
 import com.seedit.global.response.ApiResponse;
 import com.seedit.feature.stock.dto.StockResponse;
 import lombok.RequiredArgsConstructor;
