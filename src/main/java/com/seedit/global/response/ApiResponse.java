@@ -1,5 +1,7 @@
 package com.seedit.global.response;
 
+import com.seedit.global.error.ErrorCode;
+
 /**
  * 모든 API 공통 응답 봉투.
  *  성공: { "success": true,  "data": {...}, "error": null }
@@ -25,8 +27,12 @@ public class ApiResponse<T> {
         return new ApiResponse<>(true, null, null);
     }
 
-    public static ApiResponse<Void> error(String code, String message) {
+    public static <T> ApiResponse<T> error(String code, String message) {
         return new ApiResponse<>(false, null, new ErrorBody(code, message));
+    }
+
+    public static <T> ApiResponse<T> error(ErrorCode errorCode) {
+        return new ApiResponse<>(false, null, new ErrorBody(errorCode.getCode(), errorCode.getMessage()));
     }
 
     public boolean isSuccess() { return success; }

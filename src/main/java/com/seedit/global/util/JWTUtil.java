@@ -7,7 +7,6 @@ import io.jsonwebtoken.security.Keys;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
-import java.security.Key;
 import java.util.Date;
 
 /**
@@ -31,12 +30,13 @@ public class JWTUtil {
         this.refreshTokenexpirationMs = refreshTokenexpirationMs;
     }
 
-    public String generateAccessToken(String subject){
+    public String generateAccessToken(String subject, String role){
         Date now = new Date();
         Date expiry = new Date(now.getTime() + accessTokenexpirationMs);
 
         return Jwts.builder()
                 .subject(subject)
+                .claim("role",role)
                 .issuedAt(now)
                 .expiration(expiry)
                 .signWith(secretKey)

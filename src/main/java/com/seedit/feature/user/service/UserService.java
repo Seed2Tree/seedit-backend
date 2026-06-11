@@ -1,15 +1,12 @@
 package com.seedit.feature.user.service;
 
 import com.seedit.feature.user.domain.UserAccount;
+import com.seedit.feature.user.dto.response.UserProfileResponse;
 
 import java.util.List;
 
 public interface UserService {
-    boolean addUser(UserAccount userAccount);
-
-    List<UserAccount> getAllUsers();
-
-    UserAccount getUserById(int userId);
+    UserAccount addUser(UserAccount userAccount);
 
     UserAccount getUserByEmail(String email);
 
@@ -17,6 +14,10 @@ public interface UserService {
 
     boolean updatePassword(String email, String newRawPassword);
 
-    boolean deleteUser(int userId);
+    boolean deleteUser(Long userId);
+
+    boolean existsByEmail(String email);
+
+    UserProfileResponse getMyProfile(String email);
 
 }

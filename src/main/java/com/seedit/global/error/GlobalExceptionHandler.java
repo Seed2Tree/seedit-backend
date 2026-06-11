@@ -2,6 +2,8 @@ package com.seedit.global.error;
 
 import com.seedit.global.response.ApiResponse;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -11,12 +13,20 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    // AUTH_INVALID_CREDENTIALS
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAuth(AuthenticationException e) {
+        ErrorCode ec = ErrorCode.AUTH_INVALID_CREDENTIALS;
+        return ResponseEntity.status(ec.getHttpStatus())
+                .body(ApiResponse.error(ec.getCode(), ec.getMessage()));
+    }
+
     // 비즈니스 예외
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ApiResponse<Void>> handleBusiness(BusinessException e) {
         ErrorCode ec = e.getErrorCode();
         return ResponseEntity.status(ec.getHttpStatus())
-                .body(ApiResponse.error(ec.getCode(), e.getMessage()));
+                .body(ApiResponse.error(ec.getCode(), ec.getMessage()));
     }
 
     // @Valid 검증 실패
@@ -27,6 +37,14 @@ public class GlobalExceptionHandler {
         ErrorCode ec = ErrorCode.COMMON_VALIDATION;
         return ResponseEntity.status(ec.getHttpStatus())
                 .body(ApiResponse.error(ec.getCode(), msg));
+    }
+
+    // 생년월일을 LocalDate로 받을 때 파싱 실패 등
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiResponse<Void>> handleNotReadable(HttpMessageNotReadableException e) {
+        ErrorCode ec = ErrorCode.COMMON_INVALID_FORMAT;
+        return ResponseEntity.status(ec.getHttpStatus())
+                .body(ApiResponse.error(ec.getCode(), ec.getMessage()));
     }
 
     // 그 외 예측 못한 예외

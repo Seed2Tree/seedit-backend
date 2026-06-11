@@ -1,11 +1,13 @@
 package com.seedit.global.error;
 
+
 import org.springframework.http.HttpStatus;
 
 /** 공통 에러 코드 (API_CONTRACT.md 기준). 개발하며 추가 가능. */
 public enum ErrorCode {
 
     COMMON_VALIDATION(HttpStatus.BAD_REQUEST, "COMMON_VALIDATION", "입력값이 올바르지 않습니다."),
+    COMMON_INVALID_FORMAT(HttpStatus.BAD_REQUEST, "COMMON_INVALID_FORMAT", "요청 형식이 올바르지 않습니다."),
     COMMON_NOT_FOUND(HttpStatus.NOT_FOUND, "COMMON_NOT_FOUND", "요청한 자원을 찾을 수 없습니다."),
     COMMON_INTERNAL(HttpStatus.INTERNAL_SERVER_ERROR, "COMMON_INTERNAL", "일시적인 오류가 발생했습니다."),
 
