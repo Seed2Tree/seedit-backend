@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.seedit.feature.level.repository.LevelDefinitionRepository">
+
+    <select id="findLevelNameByLevel" parameterType="int" resultType="String">
+        SELECT
+            level_name AS levelName
+        FROM level_definition
+        WHERE level = #{level}
+    </select>
+
+    <select id="findOneByLevel" parameterType="int" resultType="LevelDefinition">
+        SELECT
+        level,
+        level_name AS levelName,
+        required_point AS requiredPoint,
+        benefits
+        FROM level_definition
+        WHERE level = #{level}
+    </select>
+    <select id="findAll" resultType="LevelDefinition">
+        SELECT
+        level,
+        level_name AS levelName,
+        required_point AS requiredPoint,
+        benefits
+        FROM level_definition
+    </select>
+
+
+</mapper>

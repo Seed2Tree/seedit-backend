@@ -96,70 +96,70 @@ com.seedit
 │   ├── user                     # 프로필, 내 정보, 활동 요약
 │   │   ├── controller/UserController.java
 │   │   ├── service/{UserService, UserServiceImpl}.java
-│   │   ├── repository/UserAccountrepository.java
+│   │   ├── repository/UserAccountRepository.java
 │   │   ├── domain/UserAccount.java
 │   │   └── dto/{UserProfileResponse, UserSummaryResponse}.java
 │   │
 │   ├── level                    # 레벨, 포인트, 다음 레벨 조건
 │   │   ├── controller/LevelController.java
 │   │   ├── service/LevelService.java
-│   │   ├── repository/{UserLevelrepository, LevelDefinitionrepository}.java
+│   │   ├── repository/{UserLevelRepository, LevelDefinitionRepository}.java
 │   │   ├── domain/{UserLevel, LevelDefinition}.java
 │   │   └── dto/LevelResponse.java
 │   │
 │   ├── balance                  # 잔액 변동 이력
 │   │   ├── controller/BalanceHistoryController.java
 │   │   ├── service/BalanceHistoryService.java
-│   │   ├── repository/BalanceHistoryrepository.java
+│   │   ├── repository/BalanceHistoryRepository.java
 │   │   ├── domain/BalanceHistory.java
 │   │   └── dto/BalanceHistoryResponse.java
 │   │
 │   ├── stock                    # 종목 리스트/상세, 일별 시세
 │   │   ├── controller/StockController.java
 │   │   ├── service/StockService.java
-│   │   ├── repository/{Stockrepository, StockDetailrepository}.java
+│   │   ├── repository/{StockRepository, StockDetailRepository}.java
 │   │   ├── domain/{Stock, StockDetail}.java
 │   │   └── dto/{StockListResponse, StockDetailResponse, StockPriceResponse}.java
 │   │
 │   ├── trade                    # 모의 매수/매도, 거래 내역
 │   │   ├── controller/TradeController.java
 │   │   ├── service/TradeService.java
-│   │   ├── repository/Transactionrepository.java
+│   │   ├── repository/TradeRepository.java
 │   │   ├── domain/Transaction.java
 │   │   └── dto/{BuyRequest, SellRequest, TradeResponse, TradeHistoryResponse}.java
 │   │
 │   ├── reason                   # 투자 가설 작성/목록, 복기
 │   │   ├── controller/ReasonController.java
 │   │   ├── service/ReasonService.java
-│   │   ├── repository/Reasonrepository.java
+│   │   ├── repository/ReasonRepository.java
 │   │   ├── domain/Reason.java
 │   │   └── dto/{ReasonCreateRequest, ReasonResponse, ReasonVerifyRequest}.java
 │   │
 │   ├── portfolio                # 보유 종목, 포트폴리오 평가
 │   │   ├── controller/PortfolioController.java
 │   │   ├── service/PortfolioService.java
-│   │   ├── repository/Portfoliorepository.java
+│   │   ├── repository/PortfolioRepository.java
 │   │   ├── domain/Portfolio.java
 │   │   └── dto/{PortfolioResponse, HoldingResponse}.java
 │   │
 │   ├── watchlist                # 관심 종목 등록/조회/삭제
 │   │   ├── controller/WatchlistController.java
 │   │   ├── service/WatchlistService.java
-│   │   ├── repository/Watchlistrepository.java
+│   │   ├── repository/WatchlistRepository.java
 │   │   ├── domain/Watchlist.java
 │   │   └── dto/WatchlistResponse.java
 │   │
 │   ├── diary                    # 투자 일기 + AI 피드백
 │   │   ├── controller/DiaryController.java
 │   │   ├── service/DiaryService.java
-│   │   ├── repository/Diaryrepository.java
+│   │   ├── repository/DiaryRepository.java
 │   │   ├── domain/Diary.java
 │   │   └── dto/{DiaryCreateRequest, DiaryUpdateRequest, DiaryResponse, DiaryAiFeedbackResponse}.java
 │   │
 │   ├── study                    # 금융 콘텐츠, 즐겨찾기
 │   │   ├── controller/StudyController.java
 │   │   ├── service/StudyService.java
-│   │   ├── repository/{InvestmentStudyrepository, StudyBookmarkrepository}.java
+│   │   ├── repository/{InvestmentStudyRepository, StudyBookmarkRepository}.java
 │   │   ├── domain/{InvestmentStudy, StudyBookmark}.java
 │   │   └── dto/{StudyListResponse, StudyDetailResponse, StudyBookmarkResponse}.java
 │   │
@@ -171,7 +171,7 @@ com.seedit
 │   └── report                   # AI 포트폴리오/데일리 리포트
 │       ├── controller/ReportController.java
 │       ├── service/{PortfolioReportService, DailyEconomicReportService}.java
-│       ├── repository/AiDailyReportrepository.java
+│       ├── repository/AiDailyReportRepository.java
 │       ├── domain/AiDailyReport.java
 │       └── dto/{PortfolioReportResponse, DailyReportResponse, DailyReportRegenerateRequest}.java
 │

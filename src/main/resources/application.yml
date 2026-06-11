@@ -12,6 +12,7 @@ spring:
       # DB가 아직 없어도 앱이 뜨도록(헬스체크가 DB:DOWN 으로 보고). 운영에선 조정.
       initialization-fail-timeout: -1
 
+
 mybatis:
   mapper-locations: classpath:mapper/**/*.xml
   type-aliases-package: com.seedit.feature

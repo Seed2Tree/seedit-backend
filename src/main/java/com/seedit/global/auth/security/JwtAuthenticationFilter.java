@@ -32,25 +32,31 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     @NonNull FilterChain chain)
             throws ServletException, IOException {
         String header = request.getHeader(AUTH_HEADER);
-        if(header == null || !header.startsWith(BEARER_PREFIX)){
+        if (header == null || !header.startsWith(BEARER_PREFIX)) {
             chain.doFilter(request, response);
-            return ;
+            return;
         }
         String token = header.substring(BEARER_PREFIX.length());
 
-        if(jwtUtil.validateToken(token)){
+        if (jwtUtil.validateToken(token)) {
             String username = jwtUtil.getSubject(token);
+            String role = jwtUtil.getClaims(token).get("role",String.class);
 
             UsernamePasswordAuthenticationToken authToken =
                     new UsernamePasswordAuthenticationToken(
                             username,
                             null, // credentials 이미 검증된 토큰이므로)
-                            List.of(new SimpleGrantedAuthority("ROLE_USER"))
+                            List.of(new SimpleGrantedAuthority(role))
                     );
             SecurityContextHolder.getContext()
                     .setAuthentication(authToken);
-        }
 
-        chain.doFilter(request,response);
+            chain.doFilter(request, response);
+
+        } else {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write("{\"success\": false, \"data\": null, \"error\": {\"code\": \"AUTH_TOKEN_EXPIRED\", \"message\": \"유효하지 않거나 만료된 토큰입니다.\"}}");
+        }
     }
 }

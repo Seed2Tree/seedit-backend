@@ -26,22 +26,24 @@ DROP TABLE IF EXISTS user_account;
 -- 1. 회원 및 자산/레벨 도메인 (1차 스프린트 필수)
 -- ====================================================================
 CREATE TABLE user_account (
-    user_id            INT AUTO_INCREMENT PRIMARY KEY COMMENT '사용자 고유 ID',
-    username       VARCHAR(50) UNIQUE NOT NULL COMMENT '로그인 아이디',
+    user_id        BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '사용자 고유 ID',
+    username       VARCHAR(50) NOT NULL COMMENT '로그인 아이디',
     password_hash  VARCHAR(255) NOT NULL COMMENT '암호화된 비밀번호',
     name           VARCHAR(50) NOT NULL COMMENT '실명',
     birth          DATE NOT NULL COMMENT '생년월일',
     email          VARCHAR(100) UNIQUE NOT NULL COMMENT '이메일',
-    balance        DECIMAL(15,2) NOT NULL DEFAULT 5000000.00 COMMENT '현재 잔액 (모의투자 투자금)',
-    total_invested DECIMAL(15,2) NOT NULL DEFAULT 0.00 COMMENT '총 투자 원금 누계',
+    balance        BIGINT NOT NULL DEFAULT 5000000 COMMENT '현재 잔액 (모의투자 투자금)',
+    total_invested BIGINT NOT NULL DEFAULT 0 COMMENT '총 투자 원금 누계',
     created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '가입일시',
-    updated_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '최종 수정일시'
+    updated_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '최종 수정일시',
+    role 		   VARCHAR(50) NOT NULL DEFAULT 'ROLE_USER' COMMENT '역할'
 ) COMMENT '사용자 계정 및 잔액 정보';
 
 CREATE TABLE balance_history (
-    bhid            INT AUTO_INCREMENT PRIMARY KEY COMMENT '이력 고유 ID',
-    user_id 			INT NOT NULL COMMENT '사용자 ID',
-    amount 		DECIMAL(15,2) NOT NULL COMMENT '변동 금액(양수 = 입금, 음수=출금/매수',
+    bhid            BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '이력 고유 ID',
+    user_id 		BIGINT NOT NULL COMMENT '사용자 ID',
+    amount 			BIGINT NOT NULL COMMENT '변동 금액(양수 = 입금, 음수=출금/매수',
+    current_balance BIGINT NOT NULL COMMENT '변동 후 최종 잔액',
     reason_type 	VARCHAR(20) NOT NULL COMMENT '변동 유형:BUY/SELL',
     created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '변동 일시',
     FOREIGN KEY (user_id) REFERENCES user_account(user_id) ON DELETE CASCADE
@@ -55,7 +57,7 @@ CREATE TABLE level_definition (
 ) COMMENT '레벨 정의';
 
 CREATE TABLE user_level (
-    user_id            INT PRIMARY KEY COMMENT '사용자 고유 ID',
+    user_id        BIGINT PRIMARY KEY COMMENT '사용자 고유 ID',
     level  		   INT NOT NULL DEFAULT 1 COMMENT '현재 레벨',
     point 		   INT NOT NULL DEFAULT 0 COMMENT '현재 누적 포인트',
     updated_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '최종 갱신일시',
@@ -67,7 +69,7 @@ CREATE TABLE user_level (
 -- 2. 주식 종목 및 시세 도메인 (모의투자 필수 부모 테이블)
 -- ====================================================================
 CREATE TABLE stock (
-    sid          INT AUTO_INCREMENT PRIMARY KEY COMMENT '종목 고유 ID',
+    sid          BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '종목 고유 ID',
     company_name VARCHAR(100) NOT NULL COMMENT '기업명',
     ticker       VARCHAR(20) UNIQUE NOT NULL COMMENT '종목 코드 (예: 005930)',
     description  TEXT COMMENT '기업 설명',
@@ -76,8 +78,8 @@ CREATE TABLE stock (
 
 -- 종목 디테일 테이블 생성해주기  
 CREATE TABLE stock_detail ( 
-    sdid            INT AUTO_INCREMENT PRIMARY KEY COMMENT '시세 고유 ID',
-	sid 			INT COMMENT '종목 ID',
+    sdid            BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '시세 고유 ID',
+	sid 			BIGINT COMMENT '종목 ID',
     open_price 		DECIMAL(12,2) NOT NULL COMMENT '시가',
     close_price 	DECIMAL(12,2) COMMENT '종가(장중에는 NULL, 마감 후 확정)',
     current_price 	DECIMAL(12,2) NOT NULL COMMENT '현재가(장중 실시간 갱신)',
@@ -93,9 +95,9 @@ CREATE TABLE stock_detail (
 -- 3. 거래 및 포트폴리오 도메인 (1차 스프린트 핵심: 매수/매도 API 연동)
 -- ====================================================================
 CREATE TABLE portfolio (
-    pid            INT AUTO_INCREMENT PRIMARY KEY COMMENT '보유종목 고유 ID',
-    user_id 		   INT NOT NULL COMMENT '사용자 ID',
-    sid 		   INT NOT NULL COMMENT '종목 ID',
+    pid            BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '보유종목 고유 ID',
+    user_id 	   BIGINT NOT NULL COMMENT '사용자 ID',
+    sid 		   BIGINT NOT NULL COMMENT '종목 ID',
     quantity 	   INT NOT NULL DEFAULT 0 COMMENT '보유 수량',
     avg_price 	   DECIMAL(12,2) NOT NULL COMMENT '평균 매입 단가(평단가)',
     total_amount   DECIMAL(15,2) NOT NULL COMMENT '총 보유금액(보유수량x평단가)',
@@ -106,9 +108,9 @@ CREATE TABLE portfolio (
 ) COMMENT '사용자 보유 종목';
 
 CREATE TABLE transaction (
-    tid            INT AUTO_INCREMENT PRIMARY KEY COMMENT '거래 고유 ID',
-    user_id 		   INT NOT NULL COMMENT '사용자 ID',
-    sid 		   INT NOT NULL COMMENT '종목 ID',
+    tid            BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '거래 고유 ID',
+    user_id 	   BIGINT NOT NULL COMMENT '사용자 ID',
+    sid 		   BIGINT NOT NULL COMMENT '종목 ID',
     type 		   VARCHAR(10) NOT NULL COMMENT '거래 유형:BUY/SELL',
     price 	   	   DECIMAL(12,2) NOT NULL COMMENT '체결 단가',
     quantity 	   INT NOT NULL COMMENT '거래 수량',
@@ -120,9 +122,9 @@ CREATE TABLE transaction (
 
 
 CREATE TABLE reason (
-    rid            INT AUTO_INCREMENT PRIMARY KEY COMMENT '가설 고유 ID',
-    user_id 		   INT NOT NULL COMMENT '사용자 ID',
-    tid 		   INT NULL COMMENT '연관 거래 ID',
+    rid            BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '가설 고유 ID',
+    user_id 	   BIGINT NOT NULL COMMENT '사용자 ID',
+    tid 		   BIGINT NULL COMMENT '연관 거래 ID',
     type 		   VARCHAR(10) NOT NULL COMMENT '가설 유형:BUY/SELL',
     reason_date    DATE NOT NULL COMMENT '가설 작성일',
 	tag 		   VARCHAR(50) COMMENT '필터용 태그',
@@ -135,8 +137,8 @@ CREATE TABLE reason (
 ) COMMENT '투자 가설 이유';
 
 CREATE TABLE diary (
-    did            INT AUTO_INCREMENT PRIMARY KEY COMMENT '일기 고유 ID',
-    user_id 		   INT NOT NULL COMMENT '사용자 ID',
+    did            BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '일기 고유 ID',
+    user_id 	   BIGINT NOT NULL COMMENT '사용자 ID',
     diary_date     DATE NOT NULL COMMENT '일기 작성 날짜',
 	content	 	   TEXT COMMENT '오늘의 일지 내용',
     ai_feedback    TEXT COMMENT 'AI 피드백',
@@ -147,9 +149,9 @@ CREATE TABLE diary (
 
 -- 관심 종목 테이블 추가하기 
 CREATE TABLE watchlist (
-    wid            INT AUTO_INCREMENT PRIMARY KEY COMMENT '즐겨찾기 고유 ID',
-    user_id 		   INT NOT NULL COMMENT '사용자 ID',
-    sid 		   INT NOT NULL COMMENT '종목 ID',
+    wid            BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '즐겨찾기 고유 ID',
+    user_id		   BIGINT NOT NULL COMMENT '사용자 ID',
+    sid 		   BIGINT NOT NULL COMMENT '종목 ID',
     created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '등록 일시',
     FOREIGN KEY (user_id) REFERENCES user_account(user_id) ON DELETE CASCADE,
     FOREIGN KEY (sid) REFERENCES stock(sid) ON DELETE CASCADE,
@@ -161,7 +163,7 @@ CREATE TABLE watchlist (
 -- ====================================================================
 -- 영상 콘텐츠 테이블 추가하기 
 CREATE TABLE investment_study (
-    isid         INT AUTO_INCREMENT PRIMARY KEY COMMENT '콘텐츠 고유 ID',
+    isid         BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '콘텐츠 고유 ID',
     title        VARCHAR(200) NOT NULL COMMENT '콘텐츠 제목',
     youtube_url  VARCHAR(500) NOT NULL COMMENT '유튜브 링크',
     description  TEXT COMMENT '콘텐츠 설명',
@@ -172,9 +174,9 @@ CREATE TABLE investment_study (
 
 -- 콘텐츠 즐겨찾기(북마크) 추가하기 
 CREATE TABLE study_bookmark (
-    sbid       INT AUTO_INCREMENT PRIMARY KEY COMMENT '즐겨찾기 고유 ID',
-    user_id        INT NOT NULL COMMENT '사용자 ID',
-    isid       INT NOT NULL COMMENT '콘텐츠 ID',
+    sbid       BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '즐겨찾기 고유 ID',
+    user_id     BIGINT NOT NULL COMMENT '사용자 ID',
+    isid       BIGINT NOT NULL COMMENT '콘텐츠 ID',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '즐겨찾기 등록일시',
     FOREIGN KEY (user_id) REFERENCES user_account(user_id) ON DELETE CASCADE,
     FOREIGN KEY (isid) REFERENCES investment_study(isid) ON DELETE CASCADE,
@@ -183,7 +185,7 @@ CREATE TABLE study_bookmark (
 
 -- 뉴스 콘텐츠 테이블 추가하기 
 CREATE TABLE hankyung_content  (
-    hkid           INT AUTO_INCREMENT PRIMARY KEY COMMENT '한경 뉴스 콘텐츠 ID',
+    hkid         BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '한경 뉴스 콘텐츠 ID',
     news_title   VARCHAR(255) NOT NULL COMMENT '수집한 한경 뉴스 헤드라인',
     news_url     VARCHAR(500) COMMENT '원본 뉴스 링크',
 	content	 	   TEXT COMMENT '원본 뉴스 내용',
@@ -191,7 +193,7 @@ CREATE TABLE hankyung_content  (
 ) COMMENT '한경 뉴스 콘텐츠';
 
 CREATE TABLE hankyung_daily_report (
-    hrid         INT AUTO_INCREMENT PRIMARY KEY COMMENT '리포트 고유 ID',
+    hrid         BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '리포트 고유 ID',
     report_date  DATE NOT NULL UNIQUE COMMENT '리포트 날짜',
     ai_summary   TEXT NOT NULL COMMENT 'AI가 요약/분석한 핵심 브리핑',
 	created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '생성일시'
@@ -208,6 +210,39 @@ INSERT INTO level_definition (level, level_name, required_point, benefits) VALUE
 INSERT INTO user_account (username, password_hash, name, birth, email, balance) VALUES 
 ('testuser1', '$2a$10$E2IdEwdK...', '테스터원', '2008-05-15', 'tester1@seedit.com', 5000000.00);
 
-INSERT INTO user_level (user_id, level, point) VALUES (1, 1, 0);
+-- INSERT INTO user_level (user_id, level, point) VALUES (1, 1, 0);
+
+select * from level_definition;
+
+-- INSERT INTO balance_history (user_id, amount, current_balance, reason_type)
+-- VALUES ("2", "-1000000", "4000000","BUY");
+
+select * from balance_history;
+
+SELECT
+bhid,
+user_id AS userId,
+amount,
+current_balance AS currentBalance,
+reason_type AS reasonType,
+created_at AS createdAt
+FROM balance_history
+WHERE bhid = 2;
+        
+SELECT
+bhid,
+user_id AS userId,
+amount,
+current_balance AS currentBalance,
+reason_type AS reasonType,
+created_at AS createdAt
+FROM balance_history
+WHERE user_id = 1;
 
 select * from user_account;
+select * from user_level;
+
+select * from balance_history;
+select * from level_definition;
+
+-- select count(*) from user_account where email = "tester1@seedit2.com";

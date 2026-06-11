@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.seedit.feature.balance.repository.BalanceHistoryRepository">
+
+    <insert id="save" parameterType="BalanceHistory">
+        INSERT INTO balance_history (user_id, amount, current_balance , reason_type)
+        VALUES (#{userId}, #{amount}, #{currentBalance}, #{reasonType})
+    </insert>
+
+    <select id="findById" parameterType="Long" resultType="BalanceHistory">
+        SELECT
+        bhid,
+        user_id AS userId,
+        amount,
+        current_balance AS currentBalance,
+        reason_type AS reasonType,
+        created_at AS createdAt
+        FROM balance_history
+        WHERE bhid = #{bhid}
+    </select>
+
+    <select id="findByUserId" parameterType="Long" resultType="BalanceHistory">
+        SELECT
+        bhid,
+        user_id AS userId,
+        amount,
+        current_balance AS currentBalance,
+        reason_type AS reasonType,
+        created_at AS createdAt
+        FROM balance_history
+        WHERE user_id = #{userId}
+    </select>
+</mapper>
