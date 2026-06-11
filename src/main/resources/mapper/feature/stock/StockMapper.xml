@@ -20,4 +20,63 @@
         ORDER BY s.company_name
     </select>
 
+    <!-- F01-2: 종목 상세 조회 (기본정보 + 펀더멘털 + 최신 시세) -->
+    <select id="findDetailByTicker" resultType="StockDetail">
+        SELECT s.sid,
+               s.company_name,
+               s.ticker,
+               s.description,
+               s.sector,
+               s.market,
+               s.market_cap,
+               s.foreign_ownership_pct,
+               s.per,
+               s.eps,
+               s.pbr,
+               s.bps,
+               sd.current_price,
+               sd.open_price,
+               sd.high_price,
+               sd.low_price,
+               sd.prev_close_price,
+               sd.volume,
+               sd.trading_value,
+               sd.w52_high_price,
+               sd.w52_low_price,
+               sd.trade_date,
+               ROUND((sd.current_price - sd.prev_close_price) / sd.prev_close_price * 100, 2) AS change_rate,
+               (sd.current_price - sd.prev_close_price)                                       AS change_price
+        FROM stock s
+        JOIN stock_detail sd ON s.sid = sd.sid
+        WHERE s.ticker = #{ticker}
+          AND sd.trade_date = (
+              SELECT MAX(trade_date) FROM stock_detail WHERE sid = s.sid
+          )
+    </select>
+
+    <!-- F01-3: 기간별 캔들 조회 (최근 limit일을 groupFormat 단위로 집계, 날짜 오름차순)
+         시가 = 구간 첫 날 시가, 종가 = 구간 마지막 날 종가(장중이면 현재가),
+         고가 = 구간 최고가, 저가 = 구간 최저가 -->
+    <select id="findCandlesByTicker" resultType="StockCandle">
+        SELECT MAX(d.trade_date)                                                                          AS `date`,
+               CAST(SUBSTRING_INDEX(GROUP_CONCAT(d.open_price  ORDER BY d.trade_date ASC), ',',  1) AS SIGNED) AS `open`,
+               CAST(SUBSTRING_INDEX(GROUP_CONCAT(d.close_p     ORDER BY d.trade_date ASC), ',', -1) AS SIGNED) AS `close`,
+               CAST(MAX(d.high_price) AS SIGNED)                                                          AS `high`,
+               CAST(MIN(d.low_price)  AS SIGNED)                                                          AS `low`
+        FROM (
+            SELECT sd.trade_date,
+                   sd.open_price,
+                   COALESCE(sd.close_price, sd.current_price) AS close_p,
+                   sd.high_price,
+                   sd.low_price
+            FROM stock_detail sd
+            JOIN stock s ON s.sid = sd.sid
+            WHERE s.ticker = #{ticker}
+            ORDER BY sd.trade_date DESC
+            LIMIT #{limit}
+        ) d
+        GROUP BY DATE_FORMAT(d.trade_date, #{groupFormat})
+        ORDER BY `date` ASC
+    </select>
+
 </mapper>
