@@ -79,4 +79,56 @@
         ORDER BY `date` ASC
     </select>
 
+    <!-- F01-4: 오늘 시세 UPSERT (10시 배치 INSERT → 16시 배치 같은 행 UPDATE)
+         - close_price: COALESCE로 "값이 있을 때만" 갱신 (10시 NULL이 16시 확정값을 덮지 않게)
+         - open_price/prev_close_price: 장 시작 시 확정되는 값이라 INSERT 때만 기록 -->
+    <insert id="upsertDailyPrice" parameterType="com.seedit.feature.stock.external.DailyStockPrice">
+        INSERT INTO stock_detail
+            (sid, trade_date, open_price, close_price, current_price, high_price, low_price,
+             prev_close_price, volume, trading_value, w52_high_price, w52_low_price)
+        VALUES
+            (#{sid}, #{tradeDate}, #{openPrice}, #{closePrice}, #{currentPrice}, #{highPrice}, #{lowPrice},
+             #{prevClosePrice}, #{volume}, #{tradingValue}, #{w52HighPrice}, #{w52LowPrice})
+        ON DUPLICATE KEY UPDATE
+            current_price  = VALUES(current_price),
+            close_price    = COALESCE(VALUES(close_price), close_price),
+            high_price     = VALUES(high_price),
+            low_price      = VALUES(low_price),
+            volume         = VALUES(volume),
+            trading_value  = VALUES(trading_value),
+            w52_high_price = VALUES(w52_high_price),
+            w52_low_price  = VALUES(w52_low_price)
+    </insert>
+
+    <!-- F01-4: 백필 - 히스토리 전체 삭제 -->
+    <delete id="deleteHistoryBySid">
+        DELETE FROM stock_detail WHERE sid = #{sid}
+    </delete>
+
+    <!-- F01-4: 백필 - 과거 일봉 일괄 INSERT (과거 데이터라 close = current) -->
+    <insert id="insertHistoryBatch">
+        INSERT IGNORE INTO stock_detail
+            (sid, trade_date, open_price, close_price, current_price, high_price, low_price,
+             prev_close_price, volume, trading_value)
+        VALUES
+        <foreach collection="candles" item="c" separator=",">
+            (#{sid}, #{c.tradeDate}, #{c.open}, #{c.close}, #{c.close}, #{c.high}, #{c.low},
+             #{c.prevClose}, #{c.volume}, #{c.tradingValue})
+        </foreach>
+    </insert>
+
+    <!-- F01-4: 펀더멘털 갱신 (응답에 없던 null 필드는 건너뜀) -->
+    <update id="updateFundamentals" parameterType="com.seedit.feature.stock.external.DailyStockPrice">
+        UPDATE stock
+        <set>
+            <if test="marketCap != null">market_cap = #{marketCap},</if>
+            <if test="foreignOwnershipPct != null">foreign_ownership_pct = #{foreignOwnershipPct},</if>
+            <if test="per != null">per = #{per},</if>
+            <if test="eps != null">eps = #{eps},</if>
+            <if test="pbr != null">pbr = #{pbr},</if>
+            <if test="bps != null">bps = #{bps},</if>
+        </set>
+        WHERE sid = #{sid}
+    </update>
+
 </mapper>
