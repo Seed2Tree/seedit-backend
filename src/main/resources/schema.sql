@@ -7,7 +7,7 @@ USE seedit;
 -- 의존성을 고려한 기존 테이블 삭제 (자식 테이블부터 삭제)
 DROP TABLE IF EXISTS study_bookmark;
 DROP TABLE IF EXISTS investment_study;
-DROP TABLE IF EXISTS hankyung_daily_report;
+DROP TABLE IF EXISTS hankyung_daily_report; 
 DROP TABLE IF EXISTS hankyung_content;
 DROP TABLE IF EXISTS watchlist;
 DROP TABLE IF EXISTS diary;
@@ -69,24 +69,35 @@ CREATE TABLE user_level (
 -- 2. 주식 종목 및 시세 도메인 (모의투자 필수 부모 테이블)
 -- ====================================================================
 CREATE TABLE stock (
-    sid          BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '종목 고유 ID',
-    company_name VARCHAR(100) NOT NULL COMMENT '기업명',
-    ticker       VARCHAR(20) UNIQUE NOT NULL COMMENT '종목 코드 (예: 005930)',
-    description  TEXT COMMENT '기업 설명',
-    sector       VARCHAR(50) COMMENT '업종/섹터'
+    sid                   BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '종목 고유 ID',
+    company_name          VARCHAR(100) NOT NULL COMMENT '기업명',
+    ticker                VARCHAR(20) UNIQUE NOT NULL COMMENT '종목 코드 (예: 005930)',
+    description           TEXT COMMENT '기업 설명',
+    sector                VARCHAR(50) COMMENT '업종/섹터',
+    market                VARCHAR(20) COMMENT '상장 시장 (KOSPI/KOSDAQ)',
+    market_cap            BIGINT COMMENT '시가총액 (억원) - KIS: hts_avls',
+    foreign_ownership_pct DECIMAL(5,2) COMMENT '외국인 보유 비율 (%) - KIS: frgn_hldn_qty_smtl_pcnt',
+    per                   DECIMAL(6,2) COMMENT 'PER - KIS: per',
+    eps                   INT COMMENT 'EPS 원 - KIS: eps',
+    pbr                   DECIMAL(5,2) COMMENT 'PBR - KIS: pbr',
+    bps                   INT COMMENT 'BPS 원 - KIS: bps'
 ) COMMENT '종목 기본 정보';
 
 -- 종목 디테일 테이블 생성해주기
 CREATE TABLE stock_detail (
-    sdid            BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '시세 고유 ID',
-	sid 			BIGINT COMMENT '종목 ID',
-    open_price 		DECIMAL(12,2) NOT NULL COMMENT '시가',
-    close_price 	DECIMAL(12,2) COMMENT '종가(장중에는 NULL, 마감 후 확정)',
-    current_price 	DECIMAL(12,2) NOT NULL COMMENT '현재가(장중 실시간 갱신)',
-    high_price 		DECIMAL(12,2) COMMENT '고가',
-    low_price 		DECIMAL(12,2) COMMENT '저가',
-    volume 			BIGINT DEFAULT 0 COMMENT '거래량',
-    trade_date 		DATE NOT NULL COMMENT '거래일 기준',
+    sdid             BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '시세 고유 ID',
+    sid              BIGINT COMMENT '종목 ID',
+    open_price       DECIMAL(12,2) NOT NULL COMMENT '시가 - KIS: stck_oprc',
+    close_price      DECIMAL(12,2) COMMENT '종가(장중에는 NULL, 마감 후 확정) - KIS: stck_clpr',
+    current_price    DECIMAL(12,2) NOT NULL COMMENT '현재가(장중 실시간 갱신) - KIS: stck_prpr',
+    high_price       DECIMAL(12,2) COMMENT '고가 - KIS: stck_hgpr',
+    low_price        DECIMAL(12,2) COMMENT '저가 - KIS: stck_lwpr',
+    prev_close_price DECIMAL(12,2) COMMENT '전일 종가 - KIS: stck_prdy_clpr',
+    volume           BIGINT DEFAULT 0 COMMENT '거래량 - KIS: acml_vol',
+    trading_value    BIGINT COMMENT '거래대금 원 - KIS: acml_tr_pbmn',
+    w52_high_price   DECIMAL(12,2) COMMENT '52주 최고가 - KIS: w52_hgpr',
+    w52_low_price    DECIMAL(12,2) COMMENT '52주 최저가 - KIS: w52_lwpr',
+    trade_date       DATE NOT NULL COMMENT '거래일 기준',
     FOREIGN KEY (sid) REFERENCES stock(sid) ON DELETE CASCADE,
     UNIQUE KEY uq_sid_trade_date (sid, trade_date) COMMENT '동일 종목 하루 중복 시세 방지'
 ) COMMENT '종목 일별 시세';
@@ -202,14 +213,41 @@ CREATE TABLE hankyung_daily_report (
 -- ====================================================================
 -- 6. [SEED-21 대응] 1차 스프린트 테스트용 최소 마이그레이션 데이터 코드
 -- ====================================================================
-INSERT INTO level_definition (level, level_name, required_point, benefits) VALUES
+INSERT INTO level_definition (level, level_name, required_point, benefits) VALUES 
 (1, '주린이', 0, '기본 모의투자 자격 부여'),
 (2, '주식 고수', 1000, '고수 인증 뱃지 제공');
 
 -- 패스워드 해시는 BCrypt 알고리즘으로 'password123'을 암호화했다고 가정한 문자열입니다.
-INSERT INTO user_account (username, password_hash, name, birth, email, balance) VALUES
+INSERT INTO user_account (username, password_hash, name, birth, email, balance) VALUES 
 ('testuser1', '$2a$10$E2IdEwdK...', '테스터원', '2008-05-15', 'tester1@seedit.com', 5000000.00);
 
-INSERT INTO user_level (user_id, level, point) VALUES (1, 1, 0);
+-- INSERT INTO user_level (user_id, level, point) VALUES (1, 1, 0);
+
+select * from level_definition;
+
+-- INSERT INTO balance_history (user_id, amount, current_balance, reason_type)
+-- VALUES ("2", "-1000000", "4000000","BUY");
+
+select * from balance_history;
+
+SELECT
+bhid,
+user_id AS userId,
+amount,
+current_balance AS currentBalance,
+reason_type AS reasonType,
+created_at AS createdAt
+FROM balance_history
+WHERE bhid = 2;
+
+SELECT
+bhid,
+user_id AS userId,
+amount,
+current_balance AS currentBalance,
+reason_type AS reasonType,
+created_at AS createdAt
+FROM balance_history
+WHERE user_id = 1;
 
 select * from user_account;
