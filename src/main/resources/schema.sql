@@ -69,27 +69,38 @@ CREATE TABLE user_level (
 -- 2. 주식 종목 및 시세 도메인 (모의투자 필수 부모 테이블)
 -- ====================================================================
 CREATE TABLE stock (
-    sid          BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '종목 고유 ID',
-    company_name VARCHAR(100) NOT NULL COMMENT '기업명',
-    ticker       VARCHAR(20) UNIQUE NOT NULL COMMENT '종목 코드 (예: 005930)',
-    description  TEXT COMMENT '기업 설명',
-    sector       VARCHAR(50) COMMENT '업종/섹터'
+    sid                   BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '종목 고유 ID',
+    company_name          VARCHAR(100) NOT NULL COMMENT '기업명',
+    ticker                VARCHAR(20) UNIQUE NOT NULL COMMENT '종목 코드 (예: 005930)',
+    description           TEXT COMMENT '기업 설명',
+    sector                VARCHAR(50) COMMENT '업종/섹터',
+    market                VARCHAR(20) COMMENT '상장 시장 (KOSPI/KOSDAQ)',
+    market_cap            BIGINT COMMENT '시가총액 (억원) - KIS: hts_avls',
+    foreign_ownership_pct DECIMAL(5,2) COMMENT '외국인 보유 비율 (%) - KIS: frgn_hldn_qty_smtl_pcnt',
+    per                   DECIMAL(6,2) COMMENT 'PER - KIS: per',
+    eps                   INT COMMENT 'EPS 원 - KIS: eps',
+    pbr                   DECIMAL(5,2) COMMENT 'PBR - KIS: pbr',
+    bps                   INT COMMENT 'BPS 원 - KIS: bps'
 ) COMMENT '종목 기본 정보';
 
--- 종목 디테일 테이블 생성해주기  
-CREATE TABLE stock_detail ( 
-    sdid            BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '시세 고유 ID',
-	sid 			BIGINT COMMENT '종목 ID',
-    open_price 		DECIMAL(12,2) NOT NULL COMMENT '시가',
-    close_price 	DECIMAL(12,2) COMMENT '종가(장중에는 NULL, 마감 후 확정)',
-    current_price 	DECIMAL(12,2) NOT NULL COMMENT '현재가(장중 실시간 갱신)',
-    high_price 		DECIMAL(12,2) COMMENT '고가',
-    low_price 		DECIMAL(12,2) COMMENT '저가',
-    volume 			BIGINT DEFAULT 0 COMMENT '거래량',
-    trade_date 		DATE NOT NULL COMMENT '거래일 기준',
+-- 종목 디테일 테이블 생성해주기
+CREATE TABLE stock_detail (
+    sdid             BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '시세 고유 ID',
+    sid              BIGINT COMMENT '종목 ID',
+    open_price       DECIMAL(12,2) NOT NULL COMMENT '시가 - KIS: stck_oprc',
+    close_price      DECIMAL(12,2) COMMENT '종가(장중에는 NULL, 마감 후 확정) - KIS: stck_clpr',
+    current_price    DECIMAL(12,2) NOT NULL COMMENT '현재가(장중 실시간 갱신) - KIS: stck_prpr',
+    high_price       DECIMAL(12,2) COMMENT '고가 - KIS: stck_hgpr',
+    low_price        DECIMAL(12,2) COMMENT '저가 - KIS: stck_lwpr',
+    prev_close_price DECIMAL(12,2) COMMENT '전일 종가 - KIS: stck_prdy_clpr',
+    volume           BIGINT DEFAULT 0 COMMENT '거래량 - KIS: acml_vol',
+    trading_value    BIGINT COMMENT '거래대금 원 - KIS: acml_tr_pbmn',
+    w52_high_price   DECIMAL(12,2) COMMENT '52주 최고가 - KIS: w52_hgpr',
+    w52_low_price    DECIMAL(12,2) COMMENT '52주 최저가 - KIS: w52_lwpr',
+    trade_date       DATE NOT NULL COMMENT '거래일 기준',
     FOREIGN KEY (sid) REFERENCES stock(sid) ON DELETE CASCADE,
     UNIQUE KEY uq_sid_trade_date (sid, trade_date) COMMENT '동일 종목 하루 중복 시세 방지'
-) comment '종목 일별 시세';
+) COMMENT '종목 일별 시세';
 
 -- ====================================================================
 -- 3. 거래 및 포트폴리오 도메인 (1차 스프린트 핵심: 매수/매도 API 연동)
