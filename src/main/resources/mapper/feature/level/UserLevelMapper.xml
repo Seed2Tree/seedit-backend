@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.seedit.feature.level.repository.UserLevelRepository">
+
+    <insert id="insertDefaultLevel" parameterType="Long">
+        INSERT INTO user_level (user_id, level, point) VALUES (#{userId}, 1, 0)
+    </insert>
+
+    <select id="selectByUserId" parameterType="Long" resultType="UserLevel">
+        SELECT
+            user_id AS userId,
+            level,
+            point,
+            updated_at AS updatedAt
+        FROM user_level
+        WHERE user_id = #{userId}
+    </select>
+</mapper>
