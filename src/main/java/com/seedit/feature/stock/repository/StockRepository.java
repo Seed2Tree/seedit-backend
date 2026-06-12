@@ -36,4 +36,11 @@ public interface StockRepository {
 
     /** 백필용: 과거 일봉 일괄 INSERT */
     void insertHistoryBatch(@Param("sid") Long sid, @Param("candles") List<DailyCandle> candles);
+
+
+    /**
+     *   sdid별 주식 데이터 조회
+     */
+    StockDetail findDetailById(@Param("sdid") Long sdid);
+
 }

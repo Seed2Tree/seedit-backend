@@ -23,6 +23,7 @@
     <!-- F01-2: 종목 상세 조회 (기본정보 + 펀더멘털 + 최신 시세) -->
     <select id="findDetailByTicker" resultType="StockDetail">
         SELECT s.sid,
+               sd.sdid,
                s.company_name,
                s.ticker,
                s.description,
@@ -131,4 +132,11 @@
         WHERE sid = #{sid}
     </update>
 
+    <select id="findDetailById" resultType="StockDetail">
+        SELECT sd.sdid,
+        sd.sid,
+        sd.current_price
+        FROM stock_detail sd
+        WHERE sd.sdid = #{sdid}
+    </select>
 </mapper>

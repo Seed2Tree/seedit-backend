@@ -23,6 +23,8 @@ public interface UserAccountRepository {
 
     int updatePassword(@Param("userId") Long userId, @Param("passwordHash") String encodedPassword);
 
+    int updateBalance(@Param("userId") Long userId, @Param("remainingBalance") Long remainingBalance);
+
     int deleteUser(Long userId);
 
 }

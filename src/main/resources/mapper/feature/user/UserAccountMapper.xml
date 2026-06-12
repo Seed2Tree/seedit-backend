@@ -112,4 +112,10 @@
         SET password_hash = #{passwordHash}
         WHERE user_id = #{userId}
     </update>
+
+    <update id="updateBalance">
+        UPDATE user_account
+        SET balance = #{remainingBalance}
+        WHERE user_id = #{userId}
+    </update>
 </mapper>

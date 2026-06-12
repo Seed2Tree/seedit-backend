@@ -35,11 +35,8 @@ public class BalanceHistoryController {
     public ApiResponse<BalanceHistoryResponse> getBalanceHistory(@PathVariable("bhid") Long bhid,
                                                                  Authentication authentication){
         UserAccount me = userService.getUserByEmail(authentication.getName());
-        BalanceHistory balanceHistory = balanceHistoryService.findBalanceHistory(bhid);
-        if(!balanceHistory.getUserId().equals(me.getUserId())){
-            throw new BusinessException(ErrorCode.AUTH_FORBIDDEN,"잘못된 접근입니다.");
-        }
-
+        Long userId = me.getUserId();
+        BalanceHistory balanceHistory = balanceHistoryService.findBalanceHistory(userId, bhid);
         return ApiResponse.ok(BalanceHistoryResponse.from(balanceHistory));
     }
 

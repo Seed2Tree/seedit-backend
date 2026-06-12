@@ -25,9 +25,13 @@ public class BalanceHistoryServiceImpl implements BalanceHistoryService{
 
     @Override
     @Transactional(readOnly = true)
-    public BalanceHistory findBalanceHistory(Long bhid) {
-        return balanceHistoryRepository.findById(bhid)
-                .orElseThrow(() -> new BusinessException(ErrorCode.COMMON_NOT_FOUND,"해당 이력이 존재하지 않았습니다. bhid="+bhid));
+    public BalanceHistory findBalanceHistory(Long userId, Long bhid) {
+        BalanceHistory balanceHistory = balanceHistoryRepository.findById(bhid)
+                .orElseThrow(()->new BusinessException(ErrorCode.COMMON_NOT_FOUND,"해당 이력이 존재하지 않았습니다. bhid="+bhid));
+        if(!balanceHistory.getUserId().equals(userId)){
+            throw new BusinessException(ErrorCode.AUTH_FORBIDDEN,"잘못된 접근입니다.");
+        }
+        return balanceHistory;
     }
 
     @Override
