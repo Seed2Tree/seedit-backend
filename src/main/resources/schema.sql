@@ -7,7 +7,7 @@ USE seedit;
 -- 의존성을 고려한 기존 테이블 삭제 (자식 테이블부터 삭제)
 DROP TABLE IF EXISTS study_bookmark;
 DROP TABLE IF EXISTS investment_study;
-DROP TABLE IF EXISTS hankyung_daily_report; 
+DROP TABLE IF EXISTS hankyung_daily_report;
 DROP TABLE IF EXISTS hankyung_content;
 DROP TABLE IF EXISTS watchlist;
 DROP TABLE IF EXISTS diary;
@@ -76,8 +76,8 @@ CREATE TABLE stock (
     sector       VARCHAR(50) COMMENT '업종/섹터'
 ) COMMENT '종목 기본 정보';
 
--- 종목 디테일 테이블 생성해주기  
-CREATE TABLE stock_detail ( 
+-- 종목 디테일 테이블 생성해주기
+CREATE TABLE stock_detail (
     sdid            BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '시세 고유 ID',
 	sid 			BIGINT COMMENT '종목 ID',
     open_price 		DECIMAL(12,2) NOT NULL COMMENT '시가',
@@ -89,7 +89,7 @@ CREATE TABLE stock_detail (
     trade_date 		DATE NOT NULL COMMENT '거래일 기준',
     FOREIGN KEY (sid) REFERENCES stock(sid) ON DELETE CASCADE,
     UNIQUE KEY uq_sid_trade_date (sid, trade_date) COMMENT '동일 종목 하루 중복 시세 방지'
-) comment '종목 일별 시세';
+) COMMENT '종목 일별 시세';
 
 -- ====================================================================
 -- 3. 거래 및 포트폴리오 도메인 (1차 스프린트 핵심: 매수/매도 API 연동)
@@ -202,47 +202,14 @@ CREATE TABLE hankyung_daily_report (
 -- ====================================================================
 -- 6. [SEED-21 대응] 1차 스프린트 테스트용 최소 마이그레이션 데이터 코드
 -- ====================================================================
-INSERT INTO level_definition (level, level_name, required_point, benefits) VALUES 
+INSERT INTO level_definition (level, level_name, required_point, benefits) VALUES
 (1, '주린이', 0, '기본 모의투자 자격 부여'),
 (2, '주식 고수', 1000, '고수 인증 뱃지 제공');
 
 -- 패스워드 해시는 BCrypt 알고리즘으로 'password123'을 암호화했다고 가정한 문자열입니다.
-INSERT INTO user_account (username, password_hash, name, birth, email, balance) VALUES 
+INSERT INTO user_account (username, password_hash, name, birth, email, balance) VALUES
 ('testuser1', '$2a$10$E2IdEwdK...', '테스터원', '2008-05-15', 'tester1@seedit.com', 5000000.00);
 
--- INSERT INTO user_level (user_id, level, point) VALUES (1, 1, 0);
-
-select * from level_definition;
-
--- INSERT INTO balance_history (user_id, amount, current_balance, reason_type)
--- VALUES ("2", "-1000000", "4000000","BUY");
-
-select * from balance_history;
-
-SELECT
-bhid,
-user_id AS userId,
-amount,
-current_balance AS currentBalance,
-reason_type AS reasonType,
-created_at AS createdAt
-FROM balance_history
-WHERE bhid = 2;
-        
-SELECT
-bhid,
-user_id AS userId,
-amount,
-current_balance AS currentBalance,
-reason_type AS reasonType,
-created_at AS createdAt
-FROM balance_history
-WHERE user_id = 1;
+INSERT INTO user_level (user_id, level, point) VALUES (1, 1, 0);
 
 select * from user_account;
-select * from user_level;
-
-select * from balance_history;
-select * from level_definition;
-
--- select count(*) from user_account where email = "tester1@seedit2.com";
