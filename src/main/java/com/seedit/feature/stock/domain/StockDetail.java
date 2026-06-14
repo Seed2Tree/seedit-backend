@@ -8,6 +8,7 @@ import java.time.LocalDate;
 @Getter
 public class StockDetail {
     private Long sid;
+    private Long sdid;
     private String companyName;
     private String ticker;
     private String description;

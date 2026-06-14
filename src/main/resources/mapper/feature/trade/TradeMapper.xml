@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.seedit.feature.trade.repository.TradeRepository">
+
+    <!--  거래 체결 (매수/매도)  -->
+    <insert id="save" parameterType="Trade">
+        INSERT INTO trade (user_id, sid, sdid, trade_type, trade_price, quantity, total_amount, remaining_balance, trade_at)
+        VALUES (#{userId}, #{sid}, #{sdid}, #{tradeType}, #{tradePrice}, #{quantity}, #{totalAmount},#{remainingBalance}, #{tradeAt})
+    </insert>
+
+    <!-- 사용자의 전체 거래 이력 조회 -->
+    <select id="findAllByUserId" parameterType="Long" resultType="TradeHistoryResponse">
+        SELECT
+        trade.tid,
+        stock.sid,
+        stock.company_name as companyName,
+        stock.ticker as ticker,
+        stock.sector as sector,
+        stock.market as market,
+        trade.trade_type as tradeType,
+        trade.trade_price as tradePrice,
+        trade.quantity,
+        trade.total_amount as totalAmount,
+        trade.remaining_balance as remainingBalance,
+        trade.trade_at AS tradeAt
+        FROM trade
+        LEFT JOIN stock
+        ON trade.sid = stock.sid
+        WHERE trade.user_id = #{userId}
+    </select>
+
+
+    <!--  특정 주식에 대한 거래 이력 조회  -->
+    <select id="findAllByUserIdAndStockId" resultType="TradeResponse">
+        SELECT
+            tid,
+            sid,
+            sdid,
+            trade_type as tradeType,
+            trade_price as tradePrice,
+            quantity,
+            total_amount as totalAmount,
+            remaining_balance as remainingBalance,
+            trade_at AS tradeAt
+        FROM trade
+        WHERE user_id = #{userId} AND sid = #{sid}
+    </select>
+
+    <select id="findByIdAndUserId" resultType="TradeHistoryResponse">
+        SELECT
+            trade.tid,
+            stock.sid,
+            stock.company_name as companyName,
+            stock.ticker as ticker,
+            stock.sector as sector,
+            stock.market as market,
+            trade.trade_type as tradeType,
+            trade.trade_price as tradePrice,
+            trade.quantity,
+            trade.total_amount as totalAmount,
+            trade.remaining_balance as remainingBalance,
+            trade.trade_at AS tradeAt
+        FROM trade
+            LEFT JOIN stock
+            ON trade.sid = stock.sid
+        WHERE trade.user_id = #{userId} AND trade.tid = #{tid}
+    </select>
+
+    <select id="countByUserId" parameterType="Long" resultType="int">
+        SELECT
+            COUNT(*)
+        FROM trade
+        WHERE user_id = #{userId}
+    </select>
+
+    <select id="findTotalQuantityByStockId" resultType="int">
+        SELECT
+            SUM(trade.quantity)
+        FROM trade
+        WHERE user_id = #{userId} AND sid = #{sid}
+    </select>
+
+
+</mapper>

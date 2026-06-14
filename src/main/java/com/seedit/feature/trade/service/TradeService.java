@@ -1,0 +1,21 @@
+package com.seedit.feature.trade.service;
+
+import com.seedit.feature.trade.domain.Trade;
+import com.seedit.feature.trade.dto.request.TradeRequest;
+import com.seedit.feature.trade.dto.response.TradeHistoryResponse;
+import com.seedit.feature.trade.dto.response.TradeResponse;
+import jakarta.servlet.http.HttpServletRequest;
+
+import java.util.List;
+
+public interface TradeService {
+
+    TradeResponse processOrder(String email, TradeRequest request);
+
+    List<TradeHistoryResponse> getHistoryList(String email);
+
+    List<TradeResponse> getHistoryListByStockId(String email, Long sid);
+
+    TradeHistoryResponse getHistoryListById(String email, Long tid);
+
+}

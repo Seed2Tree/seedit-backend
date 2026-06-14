@@ -125,7 +125,7 @@ com.seedit
 │   │   ├── controller/TradeController.java
 │   │   ├── service/TradeService.java
 │   │   ├── repository/TradeRepository.java
-│   │   ├── domain/Transaction.java
+│   │   ├── domain/Trade.java
 │   │   └── dto/{BuyRequest, SellRequest, TradeResponse, TradeHistoryResponse}.java
 │   │
 │   ├── reason                   # 투자 가설 작성/목록, 복기

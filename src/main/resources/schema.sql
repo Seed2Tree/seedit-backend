@@ -7,12 +7,12 @@ USE seedit;
 -- 의존성을 고려한 기존 테이블 삭제 (자식 테이블부터 삭제)
 DROP TABLE IF EXISTS study_bookmark;
 DROP TABLE IF EXISTS investment_study;
-DROP TABLE IF EXISTS hankyung_daily_report; 
+DROP TABLE IF EXISTS hankyung_daily_report;
 DROP TABLE IF EXISTS hankyung_content;
 DROP TABLE IF EXISTS watchlist;
 DROP TABLE IF EXISTS diary;
 DROP TABLE IF EXISTS reason;
-DROP TABLE IF EXISTS transaction;
+DROP TABLE IF EXISTS trade;
 DROP TABLE IF EXISTS portfolio;
 DROP TABLE IF EXISTS stock_detail;
 DROP TABLE IF EXISTS stock;
@@ -118,17 +118,20 @@ CREATE TABLE portfolio (
 	UNIQUE KEY uq_user_id_sid (user_id, sid) COMMENT '동일 사용자 종목 중복 보유 방지'
 ) COMMENT '사용자 보유 종목';
 
-CREATE TABLE transaction (
+CREATE TABLE trade (
     tid            BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '거래 고유 ID',
     user_id 	   BIGINT NOT NULL COMMENT '사용자 ID',
     sid 		   BIGINT NOT NULL COMMENT '종목 ID',
-    type 		   VARCHAR(10) NOT NULL COMMENT '거래 유형:BUY/SELL',
-    price 	   	   DECIMAL(12,2) NOT NULL COMMENT '체결 단가',
+    sdid 		   BIGINT NOT NULL COMMENT '종목 일별 시세 ID',
+    trade_type 		   VARCHAR(10) NOT NULL COMMENT '거래 유형:BUY/SELL',
+    trade_price 	   	   DECIMAL(12,2) NOT NULL COMMENT '체결 단가',
     quantity 	   INT NOT NULL COMMENT '거래 수량',
     total_amount   DECIMAL(15,2) NOT NULL COMMENT '거래 총액(거래수량x체결단가)',
+    remaining_balance  DECIMAL(15,2) NOT NULL COMMENT '거래 후 잔액',
     trade_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '거래 일시',
     FOREIGN KEY (user_id) REFERENCES user_account(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (sid) REFERENCES stock(sid)
+    FOREIGN KEY (sid) REFERENCES stock(sid),
+    FOREIGN KEY (sdid) REFERENCES stock_detail(sdid)
 ) COMMENT '매수/매도 거래 내역';
 
 
@@ -144,7 +147,7 @@ CREATE TABLE reason (
     is_deleted 	   BOOLEAN DEFAULT false COMMENT '소프트 삭제 여부',
     created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '생성 일시',
 	FOREIGN KEY (user_id) REFERENCES user_account(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (tid) REFERENCES transaction(tid) ON DELETE SET NULL
+    FOREIGN KEY (tid) REFERENCES trade(tid) ON DELETE SET NULL
 ) COMMENT '투자 가설 이유';
 
 CREATE TABLE diary (
@@ -210,50 +213,3 @@ CREATE TABLE hankyung_daily_report (
 	created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '생성일시'
 ) COMMENT '한경 뉴스 AI 데일리 리포트';
 
--- ====================================================================
--- 6. [SEED-21 대응] 1차 스프린트 테스트용 최소 마이그레이션 데이터 코드
--- ====================================================================
-INSERT INTO level_definition (level, level_name, required_point, benefits) VALUES 
-(1, '주린이', 0, '기본 모의투자 자격 부여'),
-(2, '주식 고수', 1000, '고수 인증 뱃지 제공');
-
--- 패스워드 해시는 BCrypt 알고리즘으로 'password123'을 암호화했다고 가정한 문자열입니다.
-INSERT INTO user_account (username, password_hash, name, birth, email, balance) VALUES 
-('testuser1', '$2a$10$E2IdEwdK...', '테스터원', '2008-05-15', 'tester1@seedit.com', 5000000.00);
-
--- INSERT INTO user_level (user_id, level, point) VALUES (1, 1, 0);
-
-select * from level_definition;
-
--- INSERT INTO balance_history (user_id, amount, current_balance, reason_type)
--- VALUES ("2", "-1000000", "4000000","BUY");
-
-select * from balance_history;
-
-SELECT
-bhid,
-user_id AS userId,
-amount,
-current_balance AS currentBalance,
-reason_type AS reasonType,
-created_at AS createdAt
-FROM balance_history
-WHERE bhid = 2;
-        
-SELECT
-bhid,
-user_id AS userId,
-amount,
-current_balance AS currentBalance,
-reason_type AS reasonType,
-created_at AS createdAt
-FROM balance_history
-WHERE user_id = 1;
-
-select * from user_account;
-select * from user_level;
-
-select * from balance_history;
-select * from level_definition;
-
--- select count(*) from user_account where email = "tester1@seedit2.com";

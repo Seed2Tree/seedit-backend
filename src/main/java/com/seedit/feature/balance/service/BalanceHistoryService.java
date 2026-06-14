@@ -10,7 +10,7 @@ public interface BalanceHistoryService {
 
     boolean saveBalanceHistory(BalanceHistory history);
 
-    BalanceHistory findBalanceHistory(Long bhid);
+    BalanceHistory findBalanceHistory(Long userId, Long bhid);
 
     List<BalanceHistory> findBalanceHistories(Long userId);
 }
