@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.seedit.feature.watchlist.repository.WatchlistRepository">
+
+    <select id="findByUserId" resultType="com.seedit.feature.watchlist.domain.Watchlist">
+        SELECT wid, user_id, sid, created_at
+        FROM watchlist
+        WHERE user_id = #{userId}
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="countByUserIdAndSid" resultType="int">
+        SELECT COUNT(*)
+        FROM watchlist
+        WHERE user_id = #{userId} AND sid = #{sid}
+    </select>
+
+    <select id="countStockBySid" resultType="int">
+        SELECT COUNT(*)
+        FROM stock
+        WHERE sid = #{sid}
+    </select>
+
+    <insert id="insert">
+        INSERT INTO watchlist (user_id, sid)
+        VALUES (#{userId}, #{sid})
+    </insert>
+
+    <delete id="deleteByUserIdAndSid">
+        DELETE FROM watchlist
+        WHERE user_id = #{userId} AND sid = #{sid}
+    </delete>
+
+</mapper>
