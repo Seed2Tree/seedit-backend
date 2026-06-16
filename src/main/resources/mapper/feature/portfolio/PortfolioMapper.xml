@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.seedit.feature.portfolio.repository.PortfolioRepository">
+
+    <!--  보유 종목 추가 -->
+    <insert id="save" parameterType="Portfolio">
+        INSERT INTO portfolio (user_id, sid, quantity, avg_price, total_amount, updated_at)
+        VALUES (#{userId}, #{sid}, #{quantity}, #{avgPrice}, #{totalAmount},#{updatedAt})
+    </insert>
+
+    <!-- 보유 종목 업데이트 -->
+    <update id="updateOneByuserIdAndsid" parameterType="Portfolio">
+        UPDATE portfolio
+        SET
+        quantity = #{quantity},
+        avg_price = #{avgPrice},
+        total_amount = #{totalAmount},
+        updated_at = #{updatedAt}
+        WHERE user_id = #{userId} AND sid = #{sid}
+    </update>
+
+    <!-- 사용자의 보유 종목 전체 조회   -->
+    <select id="findAllByUserId" parameterType="Long" resultType="PortfolioResponse">
+        SELECT
+        p.sid,
+        p.quantity,
+        p.avg_price      AS avgPrice,
+        sd.current_price AS currentPrice,
+        (sd.current_price - p.avg_price) * p.quantity AS evalProfit,
+        ROUND((sd.current_price - p.avg_price) / NULLIF(p.avg_price, 0) * 100, 2) AS profitRate
+        FROM portfolio p
+        JOIN stock_detail sd ON sd.sid = p.sid
+        AND sd.trade_date = (
+        SELECT MAX(trade_date) FROM stock_detail WHERE sid = p.sid
+        )
+        WHERE p.user_id = #{userId}
+        AND p.quantity > 0
+    </select>
+
+    <select id="findByUserIdAndSid" resultType="Portfolio">
+        SELECT
+        pid,
+        user_id,
+        sid,
+        quantity,
+        avg_price,
+        total_amount,
+        updated_at
+        FROM portfolio
+        WHERE user_id = #{userId} AND sid = #{sid}
+    </select>
+</mapper>

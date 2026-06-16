@@ -2,8 +2,7 @@ package com.seedit.feature.trade.controller;
 
 import com.seedit.feature.trade.domain.Trade;
 import com.seedit.feature.trade.dto.request.TradeRequest;
-import com.seedit.feature.trade.dto.response.TradeHistoryResponse;
-import com.seedit.feature.trade.dto.response.TradeResponse;
+import com.seedit.feature.trade.dto.response.*;
 import com.seedit.feature.trade.service.TradeService;
 import com.seedit.global.response.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,18 +21,64 @@ public class TradeController {
     private final TradeService tradeService;
 
     /**
-     * 주문 체결 (매수/매도)
-     * 매수/매도 시 주문 체결 transaction 진행
-     * @param request
+     * 주문 체결 (매수)
+     * 매수 시 주문 체결 transaction 진행
+     * @param
      * @param authentication
      * @return
      */
-    @PostMapping
-    public ApiResponse<TradeResponse> orderStock(
+    @PostMapping("/buy")
+    public ApiResponse<BuyResponse> orderStock(
             @RequestBody TradeRequest request,
             Authentication authentication
             ){
-        TradeResponse response = tradeService.processOrder(authentication.getName(), request);
+        BuyResponse response = tradeService.processOrder(authentication.getName(), request);
+        return ApiResponse.ok(response);
+    }
+
+    /**
+     * 주문 체결 (매도)
+     * 매도 시 주문 체결 transaction 진행
+     * @param
+     * @param authentication
+     * @return
+     */
+    @PostMapping("/sell")
+    public ApiResponse<SellResponse> sellStock(
+            @RequestBody TradeRequest request,
+            Authentication authentication
+    ){
+        SellResponse response = tradeService.processSell(authentication.getName(), request);
+        return ApiResponse.ok(response);
+    }
+
+    /**
+     * 매수 시 주식 종목 데이터 조회
+     * @param authentication
+     * @return
+     */
+    @GetMapping("/buy/{sdid}")
+    public ApiResponse<BuyPrepareResponse> getBuystock(
+            Authentication authentication,
+            @PathVariable("sdid") Long sdid
+    ){
+        BuyPrepareResponse response = tradeService.getBuystock(authentication.getName(), sdid);
+
+        return ApiResponse.ok(response);
+    }
+
+    /**
+     * 매도 시 주식 종목 데이터 조회
+     * @param authentication
+     * @return
+     */
+    @GetMapping("/sell/{sdid}")
+    public ApiResponse<SellPrepareResponse> getSellstock(
+            Authentication authentication,
+            @PathVariable("sdid") Long sdid
+    ){
+        SellPrepareResponse response = tradeService.getSellstock(authentication.getName(), sdid);
+
         return ApiResponse.ok(response);
     }
 

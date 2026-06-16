@@ -5,7 +5,7 @@
 <mapper namespace="com.seedit.feature.trade.repository.TradeRepository">
 
     <!--  거래 체결 (매수/매도)  -->
-    <insert id="save" parameterType="Trade">
+    <insert id="save" parameterType="Trade" useGeneratedKeys="true" keyProperty="tid">
         INSERT INTO trade (user_id, sid, sdid, trade_type, trade_price, quantity, total_amount, remaining_balance, trade_at)
         VALUES (#{userId}, #{sid}, #{sdid}, #{tradeType}, #{tradePrice}, #{quantity}, #{totalAmount},#{remainingBalance}, #{tradeAt})
     </insert>

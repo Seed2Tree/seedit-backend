@@ -5,6 +5,8 @@ import com.seedit.feature.trade.domain.TradeType;
 public record TradeRequest(
     Long sdid,
     int quantity,
-    TradeType tradeType
+    TradeType tradeType,
+    String reasonTag,
+    String reasonText
 ){}
 
