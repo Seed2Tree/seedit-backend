@@ -57,12 +57,12 @@ public class TradeController {
      * @param authentication
      * @return
      */
-    @GetMapping("/buy/{sdid}")
+    @GetMapping("/buy/{ticker}")
     public ApiResponse<BuyPrepareResponse> getBuystock(
             Authentication authentication,
-            @PathVariable("sdid") Long sdid
+            @PathVariable("ticker") String ticker
     ){
-        BuyPrepareResponse response = tradeService.getBuystock(authentication.getName(), sdid);
+        BuyPrepareResponse response = tradeService.getBuystock(authentication.getName(), ticker);
 
         return ApiResponse.ok(response);
     }
@@ -72,12 +72,12 @@ public class TradeController {
      * @param authentication
      * @return
      */
-    @GetMapping("/sell/{sdid}")
+    @GetMapping("/sell/{ticker}")
     public ApiResponse<SellPrepareResponse> getSellstock(
             Authentication authentication,
-            @PathVariable("sdid") Long sdid
+            @PathVariable("ticker") String ticker
     ){
-        SellPrepareResponse response = tradeService.getSellstock(authentication.getName(), sdid);
+        SellPrepareResponse response = tradeService.getSellstock(authentication.getName(), ticker);
 
         return ApiResponse.ok(response);
     }

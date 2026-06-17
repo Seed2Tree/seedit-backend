@@ -25,13 +25,16 @@
     <select id="findAllByUserId" parameterType="Long" resultType="PortfolioResponse">
         SELECT
         p.sid,
+        s.company_name AS companyName,
+        s.ticker,
         p.quantity,
         p.avg_price      AS avgPrice,
         sd.current_price AS currentPrice,
         (sd.current_price - p.avg_price) * p.quantity AS evalProfit,
         ROUND((sd.current_price - p.avg_price) / NULLIF(p.avg_price, 0) * 100, 2) AS profitRate
         FROM portfolio p
-        JOIN stock_detail sd ON sd.sid = p.sid
+        LEFT JOIN stock s ON s.sid = p.sid
+        LEFT JOIN stock_detail sd ON sd.sid = p.sid
         AND sd.trade_date = (
         SELECT MAX(trade_date) FROM stock_detail WHERE sid = p.sid
         )

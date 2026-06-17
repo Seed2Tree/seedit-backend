@@ -4,6 +4,7 @@ import com.seedit.feature.balance.domain.BalanceHistory;
 import com.seedit.feature.balance.dto.response.BalanceHistoryResponse;
 import com.seedit.feature.balance.service.BalanceHistoryService;
 import com.seedit.feature.portfolio.dto.response.PortfolioResponse;
+import com.seedit.feature.portfolio.dto.response.PortfolioSummaryResponse;
 import com.seedit.feature.portfolio.service.PortfolioService;
 import com.seedit.feature.user.domain.UserAccount;
 import com.seedit.feature.user.service.UserService;
@@ -30,12 +31,10 @@ public class PortfolioController {
 
 
     @GetMapping
-    public ApiResponse<List<PortfolioResponse>> getPortfolios(Authentication authentication){
+    public ApiResponse<PortfolioSummaryResponse> getPortfolios(Authentication authentication){
         UserAccount me = userService.getUserByEmail(authentication.getName());
         Long userId = me.getUserId();
-        List<PortfolioResponse> response = portfolioService.findAllByUserId(userId);
+        PortfolioSummaryResponse response = portfolioService.findAllByUserId(userId, me.getBalance());
         return ApiResponse.ok(response);
     }
-
-
 }

@@ -7,6 +7,7 @@ import com.seedit.feature.portfolio.repository.PortfolioRepository;
 import com.seedit.feature.reason.domain.Reason;
 import com.seedit.feature.reason.repository.ReasonRepository;
 import com.seedit.feature.stock.domain.Stock;
+import com.seedit.feature.stock.domain.StockDetail;
 import com.seedit.feature.stock.repository.StockRepository;
 import com.seedit.feature.trade.domain.Trade;
 import com.seedit.feature.trade.domain.TradeType;
@@ -49,7 +50,7 @@ public class TradeServiceImpl implements TradeService{
         UserAccount userAccount = userAccountRepository.findUserByEmail(email)
                 .orElseThrow(() -> new BusinessException(ErrorCode.COMMON_NOT_FOUND,"사용자를 찾을 수 없습니다."));
 
-        Stock stockDetail = stockRepository.findDetailById(request.sdid());
+        StockDetail stockDetail = stockRepository.findDetailByTicker(request.ticker());
         if(stockDetail == null){
             throw new BusinessException(ErrorCode.COMMON_NOT_FOUND,"종목 시세를 찾을 수 없습니다.");
         }
@@ -100,7 +101,7 @@ public class TradeServiceImpl implements TradeService{
         Trade trade = Trade.builder()
                 .userId(userAccount.getUserId())
                 .sid(stockDetail.getSid())
-                .sdid(request.sdid())
+                .sdid(stockDetail.getSdid())
                 .tradeType(request.tradeType())
                 .tradePrice(stockDetail.getCurrentPrice())
                 .quantity(finalQuantity)
@@ -146,7 +147,7 @@ public class TradeServiceImpl implements TradeService{
         UserAccount userAccount = userAccountRepository.findUserByEmail(email)
                 .orElseThrow(() -> new BusinessException(ErrorCode.COMMON_NOT_FOUND,"사용자를 찾을 수 없습니다."));
 
-        Stock stockDetail = stockRepository.findDetailById(request.sdid());
+        StockDetail stockDetail = stockRepository.findDetailByTicker(request.ticker());
         if(stockDetail == null){
             throw new BusinessException(ErrorCode.COMMON_NOT_FOUND,"종목 시세를 찾을 수 없습니다.");
         }
@@ -187,7 +188,7 @@ public class TradeServiceImpl implements TradeService{
         Trade trade = Trade.builder()
                 .userId(userAccount.getUserId())
                 .sid(stockDetail.getSid())
-                .sdid(request.sdid())
+                .sdid(stockDetail.getSdid())
                 .tradeType(request.tradeType())
                 .tradePrice(stockDetail.getCurrentPrice())
                 .quantity(finalQuantity)
@@ -225,28 +226,28 @@ public class TradeServiceImpl implements TradeService{
     }
 
     @Override
-    public BuyPrepareResponse getBuystock(String email, Long sdid) {
+    public BuyPrepareResponse getBuystock(String email, String ticker) {
         UserAccount user = userAccountRepository.findUserByEmail(email)
                 .orElseThrow(()->new BusinessException(ErrorCode.COMMON_NOT_FOUND));
-        Stock stock = stockRepository.findDetailById(sdid);
-        if(stock == null){
+        StockDetail stockDetail = stockRepository.findDetailByTicker(ticker);
+        if(stockDetail == null){
             throw new BusinessException(ErrorCode.COMMON_NOT_FOUND);
         }
-        return BuyPrepareResponse.from(sdid, user.getBalance(),stock);
+        return BuyPrepareResponse.from(user.getBalance(),stockDetail);
     }
 
     @Override
-    public SellPrepareResponse getSellstock(String email, Long sdid) {
+    public SellPrepareResponse getSellstock(String email, String ticker) {
         UserAccount user = userAccountRepository.findUserByEmail(email)
                 .orElseThrow(()-> new BusinessException(ErrorCode.COMMON_NOT_FOUND));
-        Stock stock = stockRepository.findDetailById(sdid);
-        if(stock == null){
+        StockDetail stockDetail = stockRepository.findDetailByTicker(ticker);
+        if(stockDetail == null){
             throw new BusinessException(ErrorCode.COMMON_NOT_FOUND);
         }
-        Portfolio portfolio = portfolioRepository.findByUserIdAndSid(user.getUserId(), stock.getSid());
-        List<Reason> reasons = reasonRepository.findByUserIdAndSid(user.getUserId(), stock.getSid());
+        Portfolio portfolio = portfolioRepository.findByUserIdAndSid(user.getUserId(), stockDetail.getSid());
+        List<Reason> reasons = reasonRepository.findByUserIdAndSid(user.getUserId(), stockDetail.getSid());
 
-        return SellPrepareResponse.from(portfolio, reasons, stock.getCurrentPrice());
+        return SellPrepareResponse.from(portfolio, reasons, stockDetail);
     }
 
     @Override

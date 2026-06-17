@@ -13,9 +13,9 @@ public interface TradeService {
 
     SellResponse processSell(String email, TradeRequest request);
 
-    BuyPrepareResponse getBuystock(String email, Long sdid);
+    BuyPrepareResponse getBuystock(String email, String ticker);
 
-    SellPrepareResponse getSellstock(String email, Long sdid);
+    SellPrepareResponse getSellstock(String email, String ticker);
 
     List<TradeHistoryResponse> getHistoryList(String email);
 

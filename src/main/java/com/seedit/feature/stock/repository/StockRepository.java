@@ -39,9 +39,9 @@ public interface StockRepository {
     void insertHistoryBatch(@Param("sid") Long sid, @Param("candles") List<DailyCandle> candles);
 
 
-    /**
-     *   sdid별 주식 데이터 조회
-     */
-    Stock findDetailById(@Param("sdid") Long sdid);
+//    /**
+//     *   sdid별 주식 데이터 조회
+//     */
+//    Stock findDetailById(@Param("sdid") Long sdid);
 
 }
