@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.seedit.feature.study.repository.StudyRepository">
+
+    <resultMap id="studyResultMap" type="com.seedit.feature.study.domain.InvestmentStudy">
+        <id property="isid" column="isid"/>
+        <result property="youtubeUrl" column="youtube_url"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <select id="findAll" resultMap="studyResultMap">
+        SELECT isid, title, youtube_url, description, category, thumbnail, created_at
+        FROM investment_study
+        ORDER BY isid ASC
+    </select>
+
+    <select id="findByCategory" resultMap="studyResultMap">
+        SELECT isid, title, youtube_url, description, category, thumbnail, created_at
+        FROM investment_study
+        WHERE category = #{category}
+        ORDER BY isid ASC
+    </select>
+
+    <select id="findById" resultMap="studyResultMap">
+        SELECT isid, title, youtube_url, description, category, thumbnail, created_at
+        FROM investment_study
+        WHERE isid = #{isid}
+    </select>
+
+</mapper>
