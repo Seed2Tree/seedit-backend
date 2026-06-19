@@ -1,6 +1,7 @@
 package com.seedit.global.auth.config;
 
 import com.seedit.global.auth.security.JwtAuthenticationFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -41,6 +42,11 @@ public class SecurityConfig {
             .csrf(csrf->csrf.disable())
             .formLogin(form -> form.disable())
             .httpBasic(basic->basic.disable())
+            .exceptionHandling(e -> e.authenticationEntryPoint((req, res, ex) -> {
+                res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                res.setContentType("application/json;charset=UTF-8");
+                res.getWriter().write("{\"success\":false,\"data\":null,\"error\":{\"code\":\"AUTH_REQUIRED\",\"message\":\"인증이 필요합니다.\"}}");
+            }))
             .sessionManagement(sm ->
                     sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth

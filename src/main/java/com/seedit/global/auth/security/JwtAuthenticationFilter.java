@@ -54,9 +54,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             chain.doFilter(request, response);
 
         } else {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json;charset=UTF-8");
-            response.getWriter().write("{\"success\": false, \"data\": null, \"error\": {\"code\": \"AUTH_TOKEN_EXPIRED\", \"message\": \"유효하지 않거나 만료된 토큰입니다.\"}}");
+//            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+//            response.setContentType("application/json;charset=UTF-8");
+//            response.getWriter().write("{\"success\": false, \"data\": null, \"error\": {\"code\": \"AUTH_TOKEN_EXPIRED\", \"message\": \"유효하지 않거나 만료된 토큰입니다.\"}}");
+            chain.doFilter(request, response);
+
         }
     }
 }

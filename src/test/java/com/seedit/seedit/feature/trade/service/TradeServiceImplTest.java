@@ -2,6 +2,8 @@ package com.seedit.seedit.feature.trade.service;
 
 import com.seedit.feature.balance.domain.BalanceHistory;
 import com.seedit.feature.balance.repository.BalanceHistoryRepository;
+import com.seedit.feature.portfolio.repository.PortfolioRepository;
+import com.seedit.feature.reason.repository.ReasonRepository;
 import com.seedit.feature.stock.domain.StockDetail;
 import com.seedit.feature.stock.repository.StockRepository;
 import com.seedit.feature.trade.domain.Trade;
@@ -35,22 +37,18 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-
 @ExtendWith(MockitoExtension.class)
 @DisplayName("TradeService 비즈니스 로직 단위 테스트")
 class TradeServiceImplTest {
 
-    @InjectMocks
-    private TradeServiceImpl tradeService;
+    @InjectMocks private TradeServiceImpl tradeService;
 
-    @Mock
-    private TradeRepository tradeRepository;
-    @Mock
-    private StockRepository stockRepository;
-    @Mock
-    private UserAccountRepository userAccountRepository;
-    @Mock
-    private BalanceHistoryRepository balanceHistoryRepository;
+    @Mock private TradeRepository tradeRepository;
+    @Mock private StockRepository stockRepository;
+    @Mock private UserAccountRepository userAccountRepository;
+    @Mock private BalanceHistoryRepository balanceHistoryRepository;
+    @Mock private PortfolioRepository portfolioRepository;   // 추가
+    @Mock private ReasonRepository reasonRepository;         // 추가
 
     private final String email = "test@seedit.com";
     private UserAccount userAccount;
@@ -58,192 +56,134 @@ class TradeServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        // 공통 테스트 데이터 세팅
         userAccount = new UserAccount();
         userAccount.setUserId(1L);
-        userAccount.setBalance(500000L); // 예수금 50만 원
+        userAccount.setBalance(500000L);
 
         stockDetail = new StockDetail();
         stockDetail.setSid(10L);
         stockDetail.setSdid(100L);
-        stockDetail.setCurrentPrice(50000L); // 주당 5만 원
+        stockDetail.setCurrentPrice(50000L);
     }
 
     @Nested
-    @DisplayName("주문 체결 및 검증 (processOrder)")
-    class ProcessOrderTest {
+    @DisplayName("매수 (processOrder)")
+    class BuyTest {
 
         @Test
-        @DisplayName("성공: 매수 주문이 정상적으로 체결되고 잔액이 차감된다.")
-        void processOrder_Buy_Success() {
-            // given
-            TradeRequest request = new TradeRequest(100L, 5, TradeType.BUY); // 5주 매수 = 25만 원
+        @DisplayName("성공: 신규 종목 매수 시 잔액 차감 + 포트폴리오 신규 저장 + 가설 저장")
+        void buy_NewHolding_Success() {
+            TradeRequest request = new TradeRequest(100L, 5, TradeType.BUY, "실적", "PER 저평가");
             given(userAccountRepository.findUserByEmail(email)).willReturn(Optional.of(userAccount));
-            given(stockRepository.findDetailById(request.sdid())).willReturn(stockDetail);
+            given(stockRepository.findDetailById(100L)).willReturn(stockDetail);
+            given(portfolioRepository.findByUserIdAndSid(1L, 10L)).willReturn(null); // 신규
 
-            // when
-            TradeResponse response = tradeService.processOrder(email, request);
+            BuyResponse response = tradeService.processOrder(email, request);
 
-            // then
-            assertThat(response).isNotNull();
             assertThat(response.tradeType()).isEqualTo(TradeType.BUY);
-            assertThat(response.tradePrice()).isEqualTo(50000L);
             assertThat(response.quantity()).isEqualTo(5);
-            assertThat(response.totalAmount()).isEqualTo(250000L);
-            assertThat(response.remainingBalance()).isEqualTo(250000L); // 50만 - 25만 = 25만
+            assertThat(response.reasonTag()).isEqualTo("실적");
+            assertThat(userAccount.getBalance()).isEqualTo(250000L); // 50만 - 25만
 
-            // 유저 계좌 상태 변동 및 DB 반영 검증
-            assertThat(userAccount.getBalance()).isEqualTo(250000L);
-            verify(userAccountRepository, times(1)).updateBalance(userAccount.getUserId(), 250000L);
-
-            // 영속화 레포지토리 호출 검증
-            verify(tradeRepository, times(1)).save(any(Trade.class));
-            verify(balanceHistoryRepository, times(1)).save(any(BalanceHistory.class));
+            verify(userAccountRepository).updateBalance(1L, 250000L);
+            verify(portfolioRepository).save(any(Portfolio.class));   // 신규라 save
+            verify(portfolioRepository, never()).updateOneByuserIdAndsid(any());
+            verify(tradeRepository).save(any(Trade.class));
+            verify(balanceHistoryRepository).save(any(BalanceHistory.class));
+            verify(reasonRepository).save(any(Reason.class));
         }
 
         @Test
-        @DisplayName("실패: 매수 금액보다 예수금이 부족하면 TRADE_INSUFFICIENT_BALANCE 예외가 발생한다.")
-        void processOrder_Buy_InsufficientBalance() {
-            // given
-            TradeRequest request = new TradeRequest(100L, 20, TradeType.BUY); // 20주 매수 = 100만 원 (잔액 50만)
+        @DisplayName("성공: 기존 보유 종목 추가 매수 시 가중평균 평단가로 갱신된다")
+        void buy_AddHolding_WeightedAvg() {
+            TradeRequest request = new TradeRequest(100L, 5, TradeType.BUY, "추가매수", "분할매수");
+            // 기존: 5주, 평단 40000, 원가 200000
+            Portfolio holding = Portfolio.builder()
+                    .userId(1L).sid(10L).quantity(5).avgPrice(40000L).totalAmount(200000L).build();
             given(userAccountRepository.findUserByEmail(email)).willReturn(Optional.of(userAccount));
-            given(stockRepository.findDetailById(request.sdid())).willReturn(stockDetail);
+            given(stockRepository.findDetailById(100L)).willReturn(stockDetail);
+            given(portfolioRepository.findByUserIdAndSid(1L, 10L)).willReturn(holding);
 
-            // when & then
+            tradeService.processOrder(email, request);
+
+            // newQty=10, newTotal=200000+250000=450000, avg=45000
+            assertThat(holding.getQuantity()).isEqualTo(10);
+            assertThat(holding.getTotalAmount()).isEqualTo(450000L);
+            assertThat(holding.getAvgPrice()).isEqualTo(45000L);
+            verify(portfolioRepository).updateOneByuserIdAndsid(holding);
+            verify(portfolioRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("실패: 잔액 부족 시 TRADE_INSUFFICIENT_BALANCE")
+        void buy_InsufficientBalance() {
+            TradeRequest request = new TradeRequest(100L, 20, TradeType.BUY, "t", "x"); // 100만 > 50만
+            given(userAccountRepository.findUserByEmail(email)).willReturn(Optional.of(userAccount));
+            given(stockRepository.findDetailById(100L)).willReturn(stockDetail);
+
             assertThatThrownBy(() -> tradeService.processOrder(email, request))
                     .isInstanceOf(BusinessException.class)
                     .hasMessageContaining(ErrorCode.TRADE_INSUFFICIENT_BALANCE.getMessage());
-        }
-
-        @Test
-        @DisplayName("성공: 매도 주문이 정상적으로 체결되고 잔액이 증가한다.")
-        void processOrder_Sell_Success() {
-            // given
-            TradeRequest request = new TradeRequest(100L, 3, TradeType.SELL); // 3주 매도 = 15만 원
-            given(userAccountRepository.findUserByEmail(email)).willReturn(Optional.of(userAccount));
-            given(stockRepository.findDetailById(request.sdid())).willReturn(stockDetail);
-            // 현재 보유 수량이 5주라고 가정 (보유 5주 - 매도 3주 = 남은 2주 >= 0 이므로 성공)
-            given(tradeRepository.findTotalQuantityByStockId(userAccount.getUserId(), stockDetail.getSid())).willReturn(5);
-
-            // when
-            TradeResponse response = tradeService.processOrder(email, request);
-
-            // then
-            assertThat(response).isNotNull();
-            assertThat(response.tradeType()).isEqualTo(TradeType.SELL);
-            assertThat(response.totalAmount()).isEqualTo(150000L);
-            assertThat(response.remainingBalance()).isEqualTo(650000L); // 50만 + 15만 = 65만
-
-            assertThat(userAccount.getBalance()).isEqualTo(650000L);
-            verify(userAccountRepository, times(1)).updateBalance(userAccount.getUserId(), 650000L);
-            verify(tradeRepository, times(1)).save(any(Trade.class));
-        }
-
-        @Test
-        @DisplayName("실패: 보유한 주식 수량보다 더 많이 매도하려고 하면 TRADE_INSUFFICIENT_QUANTITY 예외가 발생한다.")
-        void processOrder_Sell_InsufficientQuantity() {
-            // given
-            TradeRequest request = new TradeRequest(100L, 5, TradeType.SELL); // 5주 매도 시도
-            given(userAccountRepository.findUserByEmail(email)).willReturn(Optional.of(userAccount));
-            given(stockRepository.findDetailById(request.sdid())).willReturn(stockDetail);
-            // 현재 보유 수량이 2주밖에 없음 (보유 2주 - 매도 5주 = -3이 되므로 실패)
-            given(tradeRepository.findTotalQuantityByStockId(userAccount.getUserId(), stockDetail.getSid())).willReturn(2);
-
-            // when & then
-            assertThatThrownBy(() -> tradeService.processOrder(email, request))
-                    .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining(ErrorCode.TRADE_INSUFFICIENT_QUANTITY.getMessage());
-        }
-
-        @Test
-        @DisplayName("실패: 가입되지 않거나 유효하지 않은 이메일인 경우 COMMON_NOT_FOUND 예외가 발생한다.")
-        void processOrder_UserNotFound() {
-            // given
-            TradeRequest request = new TradeRequest(100L, 5, TradeType.BUY);
-            given(userAccountRepository.findUserByEmail(email)).willReturn(Optional.empty());
-
-            // when & then
-            assertThatThrownBy(() -> tradeService.processOrder(email, request))
-                    .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("사용자를 찾을 수 없습니다.");
+            // 롤백 의도: 영속화가 일어나지 않아야 함
+            verify(tradeRepository, never()).save(any());
+            verify(portfolioRepository, never()).save(any());
         }
     }
 
     @Nested
-    @DisplayName("거래 이력 조회 검증")
-    class GetHistoryTest {
+    @DisplayName("매도 (processSell)")
+    class SellTest {
 
         @Test
-        @DisplayName("성공: 사용자의 전체 거래 이력 목록을 반환한다.")
-        void getHistoryList_Success() {
-            // given
-            TradeHistoryResponse historyMock = new TradeHistoryResponse(
-                    1L, 10L, "삼성전자", "005930", "반도체", "KOSPI",
-                    TradeType.BUY, 50000L, 5, 250000L, 250000L, LocalDateTime.now()
-            );
+        @DisplayName("성공: 매도 시 잔액 증가 + 보유수량 차감 + 평단가 유지")
+        void sell_Success() {
+            TradeRequest request = new TradeRequest(100L, 3, TradeType.SELL, "목표가", "차익실현");
+            Portfolio holding = Portfolio.builder()
+                    .userId(1L).sid(10L).quantity(5).avgPrice(40000L).totalAmount(200000L).build();
             given(userAccountRepository.findUserByEmail(email)).willReturn(Optional.of(userAccount));
-            given(tradeRepository.findAllByUserId(userAccount.getUserId())).willReturn(List.of(historyMock));
+            given(stockRepository.findDetailById(100L)).willReturn(stockDetail);
+            given(portfolioRepository.findByUserIdAndSid(1L, 10L)).willReturn(holding);
 
-            // when
-            List<TradeHistoryResponse> results = tradeService.getHistoryList(email);
+            SellResponse response = tradeService.processSell(email, request);
 
-            // then
-            assertThat(results).hasSize(1);
-            assertThat(results.get(0).companyName()).isEqualTo("삼성전자");
-            assertThat(results.get(0).tradeType()).isEqualTo(TradeType.BUY);
+            assertThat(response.tradeType()).isEqualTo(TradeType.SELL);
+            assertThat(userAccount.getBalance()).isEqualTo(650000L); // 50만 + 15만
+            // 평단 유지, 수량 차감, 원가 = 평단 * 잔여수량
+            assertThat(holding.getQuantity()).isEqualTo(2);
+            assertThat(holding.getAvgPrice()).isEqualTo(40000L);
+            assertThat(holding.getTotalAmount()).isEqualTo(80000L); // 40000 * 2
+            verify(userAccountRepository).updateBalance(1L, 650000L);
+            verify(portfolioRepository).updateOneByuserIdAndsid(holding);
+            verify(reasonRepository).save(any(Reason.class));
         }
 
         @Test
-        @DisplayName("성공: 종목 식별자(sid) 기준 내역 목록을 반환한다.")
-        void getHistoryListByStockId_Success() {
-            // given
-            // 1. 리포지토리가 TradeResponse를 직접 반환하므로, 가짜 데이터도 TradeResponse 레코드로 생성합니다.
-            TradeResponse tradeResponseMock = new TradeResponse(
-                    1L,                // tid
-                    10L,               // sid
-                    100L,              // sdid
-                    TradeType.BUY,     // tradeType
-                    50000L,            // tradePrice
-                    5,                 // quantity
-                    250000L,           // totalAmount
-                    250000L,           // remainingBalance
-                    LocalDateTime.now()// tradeAt
-            );
-
+        @DisplayName("실패: 보유 수량 초과 매도 시 TRADE_INSUFFICIENT_QUANTITY")
+        void sell_InsufficientQuantity() {
+            TradeRequest request = new TradeRequest(100L, 5, TradeType.SELL, "t", "x");
+            Portfolio holding = Portfolio.builder()
+                    .userId(1L).sid(10L).quantity(2).avgPrice(40000L).totalAmount(80000L).build();
             given(userAccountRepository.findUserByEmail(email)).willReturn(Optional.of(userAccount));
+            given(stockRepository.findDetailById(100L)).willReturn(stockDetail);
+            given(portfolioRepository.findByUserIdAndSid(1L, 10L)).willReturn(holding);
 
-            // 2. 이제 리포지토리가 List<TradeResponse>를 반환하므로 타입 유추 에러 없이 깔끔하게 매핑됩니다.
-            List<TradeResponse> mockList = List.of(tradeResponseMock);
-            given(tradeRepository.findAllByUserIdAndStockId(userAccount.getUserId(), 10L))
-                    .willReturn(mockList);
-
-            // when
-            List<TradeResponse> results = tradeService.getHistoryListByStockId(email, 10L);
-
-            // then
-            assertThat(results).hasSize(1);
-            assertThat(results.get(0).sid()).isEqualTo(10L);
-            assertThat(results.get(0).totalAmount()).isEqualTo(250000L);
+            assertThatThrownBy(() -> tradeService.processSell(email, request))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining(ErrorCode.TRADE_INSUFFICIENT_QUANTITY.getMessage());
+            verify(tradeRepository, never()).save(any());
         }
 
         @Test
-        @DisplayName("성공: 거래 식별자(tid) 단건 상세 이력을 반환한다.")
-        void getHistoryListById_Success() {
-            // given
-            TradeHistoryResponse historyMock = new TradeHistoryResponse(
-                    1L, 10L, "삼성전자", "005930", "반도체", "KOSPI",
-                    TradeType.BUY, 50000L, 5, 250000L, 250000L, LocalDateTime.now()
-            );
+        @DisplayName("실패: 보유한 적 없는 종목 매도 시 TRADE_INSUFFICIENT_QUANTITY")
+        void sell_NoHolding() {
+            TradeRequest request = new TradeRequest(100L, 1, TradeType.SELL, "t", "x");
             given(userAccountRepository.findUserByEmail(email)).willReturn(Optional.of(userAccount));
-            given(tradeRepository.findByIdAndUserId(1L, userAccount.getUserId())).willReturn(Optional.of(historyMock));
+            given(stockRepository.findDetailById(100L)).willReturn(stockDetail);
+            given(portfolioRepository.findByUserIdAndSid(1L, 10L)).willReturn(null);
 
-            // when
-            TradeHistoryResponse result = tradeService.getHistoryListById(email, 1L);
-
-            // then
-            assertThat(result).isNotNull();
-            assertThat(result.tid()).isEqualTo(1L);
-            assertThat(result.companyName()).isEqualTo("삼성전자");
+            assertThatThrownBy(() -> tradeService.processSell(email, request))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining(ErrorCode.TRADE_INSUFFICIENT_QUANTITY.getMessage());
         }
     }
 }

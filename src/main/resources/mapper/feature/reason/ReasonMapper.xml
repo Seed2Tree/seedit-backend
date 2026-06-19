@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.seedit.feature.reason.repository.ReasonRepository">
+    <!--  가설 설정/복기 저장 -->
+    <insert id="save" parameterType="Reason">
+        INSERT INTO reason (user_id, tid, reason_type, reason_date, reason_tag, reason_text, created_at)
+        VALUES (#{userId}, #{tid}, #{reasonType}, #{reasonDate}, #{reasonTag}, #{reasonText}, #{createdAt})
+    </insert>
+
+    <!-- 사용자, 날짜별 가설 전체 조회 :: 5/1(목) 일지 내에 들어갈 거래/가설 내역 -->
+    <select id="findAllByUserIdAndDate" resultType="ReasonResponse">
+        SELECT
+        r.rid,
+        r.tid,
+        r.reason_type AS reasonType,
+        r.reason_tag AS reasonTag,
+        r.reason_text AS reasonText,
+        r.is_verified AS isVerified,
+        r.is_deleted AS isDeleted,
+        t.sid,
+        t.trade_price AS tradePrice,
+        t.quantity,
+        t.total_amount AS totalAmount
+        FROM reason r
+        LEFT JOIN trade t
+        ON r.tid = t.tid
+        WHERE r.user_id = #{userId} and r.reason_date = #{reasonDate}
+    </select>
+
+    <!-- 가설 내역 단건 조회-->
+    <select id="findByUserIdAndId" resultType="Reason">
+        SELECT
+        rid,
+        user_id AS userId,
+        tid,
+        reason_type AS reasonType,
+        reason_date AS reasonDate,
+        reason_tag AS reasonTag,
+        reason_text AS reasonText,
+        is_verified AS isVerified,
+        is_deleted AS isDeleted,
+        created_at AS createdAt
+        FROM reason
+        WHERE user_id = #{userId} AND rid = {rid}
+    </select>
+
+    <!-- 가설 검증이 안된 주식에 대한 단건 조회 -->
+    <select id="findByUserIdAndSid" resultType="Reason">
+        SELECT
+        r.rid,
+        r.user_id AS userId,
+        r.tid,
+        r.reason_type AS reasonType,
+        r.reason_date AS reasonDate,
+        r.reason_tag AS reasonTag,
+        r.reason_text AS reasonText,
+        r.is_verified AS isVerified,
+        r.is_deleted AS isDeleted,
+        r.created_at AS createdAt
+        FROM reason r LEFT JOIN trade t ON r.tid = t.tid
+        WHERE r.user_id = #{userId} AND t.sid = #{sid} AND r.is_verified = false
+    </select>
+
+    <!-- 가설 작성 횟수 조회   -->
+    <select id="countByUserId" parameterType="Long" resultType="int">
+        SELECT
+        COUNT(*)
+        FROM reason
+        WHERE user_id = #{userId}
+    </select>
+
+</mapper>

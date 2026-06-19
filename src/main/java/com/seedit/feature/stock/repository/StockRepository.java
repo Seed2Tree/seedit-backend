@@ -3,6 +3,7 @@ package com.seedit.feature.stock.repository;
 import com.seedit.feature.stock.domain.Stock;
 import com.seedit.feature.stock.domain.StockCandle;
 import com.seedit.feature.stock.domain.StockDetail;
+import com.seedit.feature.stock.dto.StockResponse;
 import com.seedit.feature.stock.external.DailyCandle;
 import com.seedit.feature.stock.external.DailyStockPrice;
 import org.apache.ibatis.annotations.Mapper;
@@ -38,9 +39,9 @@ public interface StockRepository {
     void insertHistoryBatch(@Param("sid") Long sid, @Param("candles") List<DailyCandle> candles);
 
 
-    /**
-     *   sdid별 주식 데이터 조회
-     */
-    StockDetail findDetailById(@Param("sdid") Long sdid);
+//    /**
+//     *   sdid별 주식 데이터 조회
+//     */
+//    Stock findDetailById(@Param("sdid") Long sdid);
 
 }
