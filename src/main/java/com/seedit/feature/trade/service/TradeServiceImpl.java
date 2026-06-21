@@ -13,6 +13,8 @@ import com.seedit.feature.trade.domain.Trade;
 import com.seedit.feature.trade.domain.TradeType;
 import com.seedit.feature.trade.dto.request.TradeRequest;
 import com.seedit.feature.trade.dto.response.*;
+
+import java.time.LocalDate;
 import com.seedit.feature.trade.repository.TradeRepository;
 import com.seedit.feature.user.domain.UserAccount;
 import com.seedit.feature.user.repository.UserAccountRepository;
@@ -283,5 +285,18 @@ public class TradeServiceImpl implements TradeService{
         return response;
     }
 
+    @Override
+    public List<TradeHistoryResponse> getHistoryListByDate(String email, LocalDate date) {
+        UserAccount user = userAccountRepository.findUserByEmail(email)
+                .orElseThrow(() -> new BusinessException(ErrorCode.COMMON_NOT_FOUND));
+        return tradeRepository.findAllByUserIdAndDate(user.getUserId(), date);
+    }
+
+    @Override
+    public List<TradeCalendarEntry> getTradeCalendar(String email, int year, int month) {
+        UserAccount user = userAccountRepository.findUserByEmail(email)
+                .orElseThrow(() -> new BusinessException(ErrorCode.COMMON_NOT_FOUND));
+        return tradeRepository.findCalendarByUserIdAndMonth(user.getUserId(), year, month);
+    }
 
 }

@@ -17,6 +17,8 @@ public record TradeHistoryResponse (
         int quantity,
         Long totalAmount,
         Long remainingBalance,
-        LocalDateTime tradeAt
+        LocalDateTime tradeAt,
+        String reasonTag,
+        String reasonText
 ){
 }

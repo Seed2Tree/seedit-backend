@@ -2,11 +2,13 @@ package com.seedit.feature.trade.repository;
 
 
 import com.seedit.feature.trade.domain.Trade;
+import com.seedit.feature.trade.dto.response.TradeCalendarEntry;
 import com.seedit.feature.trade.dto.response.TradeHistoryResponse;
 import com.seedit.feature.trade.dto.response.TradeResponse;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,4 +26,11 @@ public interface TradeRepository {
     int countByUserId(@Param("userId") Long userId); // INIT 트랜잭션 확인 및 거래 횟수 조회
 
     int findTotalQuantityByStockId(@Param("userId") Long userId, @Param("sid") Long sid);
+
+    List<TradeHistoryResponse> findAllByUserIdAndDate(@Param("userId") Long userId,
+                                                      @Param("date") LocalDate date);
+
+    List<TradeCalendarEntry> findCalendarByUserIdAndMonth(@Param("userId") Long userId,
+                                                          @Param("year") int year,
+                                                          @Param("month") int month);
 }
