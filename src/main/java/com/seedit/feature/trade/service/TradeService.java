@@ -1,10 +1,9 @@
 package com.seedit.feature.trade.service;
 
-import com.seedit.feature.trade.domain.Trade;
 import com.seedit.feature.trade.dto.request.TradeRequest;
 import com.seedit.feature.trade.dto.response.*;
-import jakarta.servlet.http.HttpServletRequest;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface TradeService {
@@ -22,5 +21,9 @@ public interface TradeService {
     List<TradeResponse> getHistoryListByStockId(String email, Long sid);
 
     TradeHistoryResponse getHistoryListById(String email, Long tid);
+
+    List<TradeHistoryResponse> getHistoryListByDate(String email, LocalDate date);
+
+    List<TradeCalendarEntry> getTradeCalendar(String email, int year, int month);
 
 }

@@ -1,15 +1,16 @@
 package com.seedit.feature.trade.controller;
 
-import com.seedit.feature.trade.domain.Trade;
 import com.seedit.feature.trade.dto.request.TradeRequest;
 import com.seedit.feature.trade.dto.response.*;
 import com.seedit.feature.trade.service.TradeService;
 import com.seedit.global.response.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -83,17 +84,29 @@ public class TradeController {
     }
 
     /**
-     * 전체 거래 이력 조회
-     * @param authentication
-     * @return
+     * 전체 거래 이력 조회 (date 파라미터 있으면 날짜 필터)
      */
     @GetMapping
     public ApiResponse<List<TradeHistoryResponse>> getTradeHistory(
-            Authentication authentication
-    ){
-        List<TradeHistoryResponse> response = tradeService.getHistoryList(authentication.getName());
+            Authentication authentication,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+    ) {
+        if (date != null) {
+            return ApiResponse.ok(tradeService.getHistoryListByDate(authentication.getName(), date));
+        }
+        return ApiResponse.ok(tradeService.getHistoryList(authentication.getName()));
+    }
 
-        return ApiResponse.ok(response);
+    /**
+     * 월별 거래 날짜 요약 (캘린더 도트용)
+     */
+    @GetMapping("/calendar")
+    public ApiResponse<List<TradeCalendarEntry>> getTradeCalendar(
+            Authentication authentication,
+            @RequestParam int year,
+            @RequestParam int month
+    ) {
+        return ApiResponse.ok(tradeService.getTradeCalendar(authentication.getName(), year, month));
     }
 
     /**
