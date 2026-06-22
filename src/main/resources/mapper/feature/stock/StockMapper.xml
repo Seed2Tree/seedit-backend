@@ -132,6 +132,17 @@
         WHERE sid = #{sid}
     </update>
 
+    <!-- 투자일지 AI 피드백용: 특정 날짜 이하 가장 최근 거래일의 등락률 조회 (주말/휴장일 폴백) -->
+    <select id="findChangeRateBySidAndDate" resultType="java.math.BigDecimal">
+        SELECT ROUND((close_price - prev_close_price) / prev_close_price * 100, 2)
+        FROM stock_detail
+        WHERE sid = #{sid}
+          AND trade_date &lt;= #{date}
+          AND close_price IS NOT NULL
+        ORDER BY trade_date DESC
+        LIMIT 1
+    </select>
+
     <select id="findDetailById" resultType="Stock">
         SELECT s.sid,
         s.company_name,

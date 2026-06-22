@@ -74,4 +74,13 @@ public class DiaryController {
         diaryService.delete(authentication.getName(), did);
         return ApiResponse.ok();
     }
+
+    // AI 피드백 생성 (날짜별 1회)
+    @PostMapping("/{date}/feedback")
+    public ApiResponse<DiaryDetailResponse> generateFeedback(
+            Authentication authentication,
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+    ) {
+        return ApiResponse.ok(diaryService.generateFeedback(authentication.getName(), date));
+    }
 }

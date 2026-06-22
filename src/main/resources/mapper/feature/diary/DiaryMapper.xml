@@ -59,4 +59,11 @@
           AND user_id = #{userId}
     </select>
 
+    <update id="updateAiFeedback">
+        UPDATE diary
+        SET ai_feedback = #{aiFeedback}
+        WHERE did = #{did}
+          AND user_id = #{userId}
+    </update>
+
 </mapper>

@@ -36,4 +36,8 @@ public interface DiaryRepository {
 
     Optional<Diary> findByDidAndUserId(@Param("did") Long did,
                                        @Param("userId") Long userId);
+
+    int updateAiFeedback(@Param("did") Long did,
+                         @Param("userId") Long userId,
+                         @Param("aiFeedback") String aiFeedback);
 }
