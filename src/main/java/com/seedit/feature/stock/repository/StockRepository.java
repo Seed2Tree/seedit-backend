@@ -9,7 +9,10 @@ import com.seedit.feature.stock.external.DailyStockPrice;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Mapper
 public interface StockRepository {
@@ -37,6 +40,10 @@ public interface StockRepository {
 
     /** 백필용: 과거 일봉 일괄 INSERT */
     void insertHistoryBatch(@Param("sid") Long sid, @Param("candles") List<DailyCandle> candles);
+
+    /** 투자일지 AI 피드백용: 특정 종목의 특정 날짜 등락률 조회 */
+    Optional<BigDecimal> findChangeRateBySidAndDate(@Param("sid") Long sid,
+                                                    @Param("date") LocalDate date);
 
 
 //    /**
