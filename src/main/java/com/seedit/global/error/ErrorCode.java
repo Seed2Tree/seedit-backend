@@ -28,6 +28,7 @@ public enum ErrorCode {
     WATCHLIST_DUPLICATED(HttpStatus.CONFLICT, "WATCHLIST_DUPLICATED", "이미 등록된 관심 종목입니다."),
     STUDY_BOOKMARK_DUPLICATED(HttpStatus.CONFLICT, "STUDY_BOOKMARK_DUPLICATED", "이미 즐겨찾기한 콘텐츠입니다."),
 
+    REPORT_NO_DATA(HttpStatus.NO_CONTENT, "REPORT_NO_DATA","리포트 데이터가 없습니다."),
     AI_GENERATION_FAILED(HttpStatus.OK, "AI_GENERATION_FAILED", "AI 응답 생성에 실패했습니다. 잠시 후 다시 시도해 주세요.");
 
     private final HttpStatus httpStatus;

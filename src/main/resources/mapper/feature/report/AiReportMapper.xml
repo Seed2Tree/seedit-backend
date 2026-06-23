@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.seedit.feature.report.repository.AiReportRepository">
+
+    <select id="findOne" resultType="AiReport">
+        SELECT arid,
+        stock_code AS stockCode,
+        bsns_year  AS bsnsYear,
+        reprt_code AS reprtCode,
+        content,
+        model,
+        created_at AS createdAt,
+        updated_at AS updatedAt
+        FROM ai_report
+        WHERE stock_code = #{stockCode}
+        AND bsns_year  = #{bsnsYear}
+        AND reprt_code = #{reprtCode}
+    </select>
+
+    <select id="findPeriods" resultType="AiReport">
+        SELECT arid,
+        stock_code AS stockCode,
+        bsns_year  AS bsnsYear,
+        reprt_code AS reprtCode,
+        model,
+        created_at AS createdAt,
+        updated_at AS updatedAt
+        FROM ai_report
+        WHERE stock_code = #{stockCode}
+        ORDER BY bsns_year DESC, reprt_code DESC
+    </select>
+
+    <insert id="upsert" parameterType="AiReport">
+        INSERT INTO ai_report (stock_code, bsns_year, reprt_code, content, model)
+        VALUES (#{stockCode}, #{bsnsYear}, #{reprtCode}, #{content}, #{model})
+        ON DUPLICATE KEY UPDATE
+        content = VALUES(content),
+        model   = VALUES(model)
+    </insert>
+</mapper>

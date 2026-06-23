@@ -117,6 +117,15 @@
 			<scope>runtime</scope>
 		</dependency>
 
+		<!-- RSS	-->
+		<!-- Source: https://mvnrepository.com/artifact/com.rometools/rome -->
+		<dependency>
+			<groupId>com.rometools</groupId>
+			<artifactId>rome</artifactId>
+			<version>2.1.0</version>
+			<scope>compile</scope>
+		</dependency>
+
 		<!-- 테스트 -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -132,6 +141,11 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 
