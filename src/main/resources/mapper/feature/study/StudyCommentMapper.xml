@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.seedit.feature.study.repository.StudyCommentRepository">
+
+    <select id="findByIsid" resultType="com.seedit.feature.study.dto.response.StudyCommentResponse">
+        SELECT sc.scid,
+               ua.username,
+               sc.content,
+               sc.created_at,
+               sc.updated_at,
+               (sc.user_id = #{userId}) AS is_mine
+        FROM study_comment sc
+        JOIN user_account ua ON sc.user_id = ua.user_id
+        WHERE sc.isid = #{isid}
+        ORDER BY sc.created_at DESC
+    </select>
+
+    <insert id="insert">
+        INSERT INTO study_comment (isid, user_id, content)
+        VALUES (#{isid}, #{userId}, #{content})
+    </insert>
+
+    <select id="findOwnerUserId" resultType="Long">
+        SELECT user_id FROM study_comment WHERE scid = #{scid}
+    </select>
+
+    <update id="update">
+        UPDATE study_comment SET content = #{content} WHERE scid = #{scid}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM study_comment WHERE scid = #{scid}
+    </delete>
+
+</mapper>
