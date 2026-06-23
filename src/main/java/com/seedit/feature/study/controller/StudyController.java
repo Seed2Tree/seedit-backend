@@ -6,6 +6,7 @@ import com.seedit.feature.study.service.StudyService;
 import com.seedit.global.response.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,5 +29,27 @@ public class StudyController {
     @GetMapping("/{isid}")
     public ApiResponse<StudyDetailResponse> getDetail(@PathVariable Long isid) {
         return ApiResponse.ok(studyService.getDetail(isid));
+    }
+
+    @GetMapping("/bookmarks")
+    public ApiResponse<List<StudyListResponse>> getMyBookmarks(Authentication authentication) {
+        return ApiResponse.ok(studyService.getMyBookmarks(authentication.getName()));
+    }
+
+    @GetMapping("/bookmarks/ids")
+    public ApiResponse<List<Long>> getMyBookmarkIds(Authentication authentication) {
+        return ApiResponse.ok(studyService.getMyBookmarkIds(authentication.getName()));
+    }
+
+    @PostMapping("/{isid}/bookmark")
+    public ApiResponse<Void> addBookmark(Authentication authentication, @PathVariable Long isid) {
+        studyService.addBookmark(authentication.getName(), isid);
+        return ApiResponse.ok();
+    }
+
+    @DeleteMapping("/{isid}/bookmark")
+    public ApiResponse<Void> removeBookmark(Authentication authentication, @PathVariable Long isid) {
+        studyService.removeBookmark(authentication.getName(), isid);
+        return ApiResponse.ok();
     }
 }

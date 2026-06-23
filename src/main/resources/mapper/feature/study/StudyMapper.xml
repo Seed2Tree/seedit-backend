@@ -29,4 +29,33 @@
         WHERE isid = #{isid}
     </select>
 
+    <!-- 즐겨찾기 추가 -->
+    <insert id="insertBookmark">
+        INSERT INTO study_bookmark (user_id, isid) VALUES (#{userId}, #{isid})
+    </insert>
+
+    <!-- 즐겨찾기 삭제 -->
+    <delete id="deleteBookmark">
+        DELETE FROM study_bookmark WHERE user_id = #{userId} AND isid = #{isid}
+    </delete>
+
+    <!-- 중복 체크 -->
+    <select id="countBookmark" resultType="int">
+        SELECT COUNT(*) FROM study_bookmark WHERE user_id = #{userId} AND isid = #{isid}
+    </select>
+
+    <!-- 내 즐겨찾기 isid 목록 (프론트 상태 초기화용) -->
+    <select id="findBookmarkIdsByUserId" resultType="Long">
+        SELECT isid FROM study_bookmark WHERE user_id = #{userId}
+    </select>
+
+    <!-- 내 즐겨찾기 콘텐츠 목록 (마이페이지용) -->
+    <select id="findBookmarkedByUserId" resultMap="studyResultMap">
+        SELECT s.isid, s.title, s.youtube_url, s.description, s.category, s.thumbnail, s.created_at
+        FROM investment_study s
+        JOIN study_bookmark b ON s.isid = b.isid
+        WHERE b.user_id = #{userId}
+        ORDER BY b.created_at DESC
+    </select>
+
 </mapper>

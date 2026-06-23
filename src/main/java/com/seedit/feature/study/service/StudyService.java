@@ -10,4 +10,12 @@ public interface StudyService {
     List<StudyListResponse> getList(String category);
 
     StudyDetailResponse getDetail(Long isid);
+
+    void addBookmark(String email, Long isid);
+
+    void removeBookmark(String email, Long isid);
+
+    List<StudyListResponse> getMyBookmarks(String email);
+
+    List<Long> getMyBookmarkIds(String email);
 }
