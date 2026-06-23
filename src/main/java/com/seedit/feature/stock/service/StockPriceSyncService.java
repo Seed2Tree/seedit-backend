@@ -38,7 +38,7 @@ public class StockPriceSyncService {
      * @param marketClosed true면 장 마감 후 호출 → 현재가를 종가로 확정 저장
      */
     public StockSyncResponse syncAll(boolean marketClosed) {
-        List<Stock> stocks = stockMapper.findAll();
+        List<Stock> stocks = stockMapper.findAllBase();
         List<String> failed = new ArrayList<>();
         int success = 0;
 
@@ -74,7 +74,7 @@ public class StockPriceSyncService {
      * @param days 종목당 가져올 최대 영업일 수 (예: 1300 ≈ 5년)
      */
     public StockSyncResponse backfillAll(int days) {
-        List<Stock> stocks = stockMapper.findAll();
+        List<Stock> stocks = stockMapper.findAllBase();
         List<String> failed = new ArrayList<>();
         int success = 0;
 

@@ -8,6 +8,8 @@ public class Stock {
     private String companyName;
     private String ticker;
     private String sector;
+    private String searchKeywords;
+    private Long volume;
     private Long currentPrice;
     private Double changeRate;
     private Long changePrice;

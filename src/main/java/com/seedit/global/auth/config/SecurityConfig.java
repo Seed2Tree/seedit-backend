@@ -58,6 +58,7 @@ public class SecurityConfig {
                     ).permitAll()
 
                     .requestMatchers("/api/auth/**").permitAll()
+                    .requestMatchers("/api/stocks/sync", "/api/stocks/backfill").hasRole("ADMIN")
                     .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

@@ -29,6 +29,7 @@ app:
     access-expiration-ms: ${JWT_ACCESS_EXPIRATION:1800000}
     refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION:604800000}
   ai:
+    api-key: ${AI_API_KEY:}
     api-url: ${AI_API_URL:https://gms.ssafy.io/gmsapi/generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent}
     base-url : ${GMS_BASE_URL:}
   kiwoom:
