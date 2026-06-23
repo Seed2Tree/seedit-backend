@@ -19,6 +19,15 @@
         )
         ORDER BY s.company_name
     </select>
+    
+    <select id="findAllBase" resultType="Stock">
+        SELECT s.sid,
+               s.company_name,
+               s.ticker,
+               s.sector
+        FROM stock s
+        ORDER BY s.company_name
+    </select>
 
     <!-- F01-2: 종목 상세 조회 (기본정보 + 펀더멘털 + 최신 시세) -->
     <select id="findDetailByTicker" resultType="StockDetail">

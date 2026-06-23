@@ -17,6 +17,8 @@ import java.util.Optional;
 @Mapper
 public interface StockRepository {
     List<Stock> findAll();
+    
+    List<Stock> findAllBase();
 
     StockDetail findDetailByTicker(@Param("ticker") String ticker);
 
