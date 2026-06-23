@@ -16,7 +16,7 @@ public interface TradeService {
 
     SellPrepareResponse getSellstock(String email, String ticker);
 
-    List<TradeHistoryResponse> getHistoryList(String email);
+    List<TradeHistoryResponse> getHistoryList(String email, int month);
 
     List<TradeResponse> getHistoryListByStockId(String email, Long sid);
 

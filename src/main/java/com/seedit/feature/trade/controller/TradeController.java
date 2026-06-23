@@ -1,5 +1,6 @@
 package com.seedit.feature.trade.controller;
 
+import com.seedit.feature.trade.domain.Trade;
 import com.seedit.feature.trade.dto.request.TradeRequest;
 import com.seedit.feature.trade.dto.response.*;
 import com.seedit.feature.trade.service.TradeService;
@@ -94,7 +95,7 @@ public class TradeController {
         if (date != null) {
             return ApiResponse.ok(tradeService.getHistoryListByDate(authentication.getName(), date));
         }
-        return ApiResponse.ok(tradeService.getHistoryList(authentication.getName()));
+        return ApiResponse.ok(tradeService.getHistoryList(authentication.getName(), 1));
     }
 
     /**

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.seedit.feature.news.repository.NewsRepository">
+    <insert id="insertIgnore" parameterType="NewsContent">
+        INSERT IGNORE INTO news_content
+        (news_title, news_url, press, published_at)
+        VALUES (#{newsTitle}, #{newsUrl}, #{press}, #{publishedAt})
+    </insert>
+
+    <select id="findByCompanyName" resultType="NewsContent" >
+        SELECT
+            nid,
+            news_title AS newsTitle,
+            news_url AS newsUrl,
+            press,
+            published_at AS publishedAt,
+            created_at AS createdAt
+        FROM news_content
+        WHERE news_title LIKE CONCAT('%', #{companyName}, '%')
+        ORDER BY published_at DESC
+    </select>
+
+    <select id="findByDate" resultType="NewsContent">
+        SELECT
+        nid,
+        news_title AS newsTitle,
+        news_url AS newsUrl,
+        press,
+        published_at AS publishedAt,
+        created_at AS createdAt
+        FROM news_content
+        WHERE published_at >= #{date} AND published_at &lt; #{date} + INTERVAL 1 DAY
+        ORDER BY nid DESC
+    </select>
+</mapper>
