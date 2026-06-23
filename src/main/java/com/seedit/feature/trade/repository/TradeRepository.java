@@ -17,7 +17,7 @@ public interface TradeRepository {
 
     int save(Trade trade); // 매수, 매도 거래 저장
 
-    List<TradeHistoryResponse> findAllByUserId(@Param("userId") Long userId); // 사용자별 거래 내역 전체 조회
+    List<TradeHistoryResponse> findAllByUserId(@Param("userId") Long userId, @Param("month") int month); // 사용자별 거래 내역 전체 조회
 
     List<TradeResponse> findAllByUserIdAndStockId(@Param("userId") Long userId, @Param("sid") Long sid); // 기업별 거래 내역 전체 조회
 

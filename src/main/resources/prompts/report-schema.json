@@ -1,0 +1,43 @@
+{
+  "type": "object",
+  "properties": {
+    "profitability_comment": { "type": "string", "maxLength": 100 },
+    "stability_comment": { "type": "string", "maxLength": 100 },
+    "cashflow_stage": {
+      "type": "string",
+      "enum": ["도입기", "성장기", "성숙기", "쇠퇴기"]
+    },
+    "cashflow_comment": { "type": "string", "maxLength": 100 },
+    "valuation_comment": { "type": "string", "maxLength": 100 },
+    "strengths": {
+      "type": "array",
+      "items": { "type": "string", "maxLength": 60 },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "risks": {
+      "type": "array",
+      "items": { "type": "string", "maxLength": 60 },
+      "minItems": 2,
+      "maxItems": 2
+    }
+  },
+  "required": [
+    "profitability_comment",
+    "stability_comment",
+    "cashflow_stage",
+    "cashflow_comment",
+    "valuation_comment",
+    "strengths",
+    "risks"
+  ],
+  "propertyOrdering": [
+    "profitability_comment",
+    "stability_comment",
+    "cashflow_stage",
+    "cashflow_comment",
+    "valuation_comment",
+    "strengths",
+    "risks"
+  ]
+}

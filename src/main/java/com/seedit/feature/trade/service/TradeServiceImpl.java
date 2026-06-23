@@ -253,12 +253,12 @@ public class TradeServiceImpl implements TradeService{
     }
 
     @Override
-    public List<TradeHistoryResponse> getHistoryList(String email) {
+    public List<TradeHistoryResponse> getHistoryList(String email, int month) {
         UserAccount user = userAccountRepository.findUserByEmail(email)
                 .orElseThrow(()->new BusinessException(ErrorCode.COMMON_NOT_FOUND));
         Long userId = user.getUserId();
 
-        List<TradeHistoryResponse> responses = tradeRepository.findAllByUserId(userId);
+        List<TradeHistoryResponse> responses = tradeRepository.findAllByUserId(userId,month);
 
         return responses;
     }

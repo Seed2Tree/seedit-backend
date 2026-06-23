@@ -8,7 +8,7 @@ USE seedit;
 DROP TABLE IF EXISTS study_bookmark;
 DROP TABLE IF EXISTS investment_study;
 DROP TABLE IF EXISTS hankyung_daily_report;
-DROP TABLE IF EXISTS hankyung_content;
+DROP TABLE IF EXISTS news_content;
 DROP TABLE IF EXISTS watchlist;
 DROP TABLE IF EXISTS diary;
 DROP TABLE IF EXISTS reason;
@@ -198,13 +198,14 @@ CREATE TABLE study_bookmark (
 ) COMMENT '사용자별 투자 공부 즐겨찾기';
 
 -- 뉴스 콘텐츠 테이블 추가하기 
-CREATE TABLE hankyung_content  (
-    hkid         BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '한경 뉴스 콘텐츠 ID',
-    news_title   VARCHAR(255) NOT NULL COMMENT '수집한 한경 뉴스 헤드라인',
-    news_url     VARCHAR(500) COMMENT '원본 뉴스 링크',
-	content	 	   TEXT COMMENT '원본 뉴스 내용',
+CREATE TABLE news_content  (
+    nid         BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '뉴스 콘텐츠 ID',
+    news_title   VARCHAR(255) NOT NULL COMMENT '수집한 뉴스 헤드라인',
+    news_url     VARCHAR(500) UNIQUE COMMENT '원본 뉴스 링크',
+    press 		VARCHAR(50) NOT NULL COMMENT '언론사',
+    published_at TIMESTAMP COMMENT '뉴스 발행 일자',
     created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '생성일시'
-) COMMENT '한경 뉴스 콘텐츠';
+) COMMENT '뉴스 콘텐츠';
 
 -- AI 분석 리포트 캐시 테이블
 -- (stock_code, bsns_year, reprt_code) 단위로 1건. 분기별 저장/업데이트.
