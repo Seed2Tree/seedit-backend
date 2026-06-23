@@ -9,6 +9,7 @@
                s.company_name,
                s.ticker,
                s.sector,
+               s.search_keywords,
                sd.current_price,
                ROUND((sd.current_price - sd.open_price) / sd.open_price * 100, 2) AS change_rate,
                (sd.current_price - sd.open_price)                                 AS change_price

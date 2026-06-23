@@ -9,6 +9,7 @@ public class StockResponse {
     private final String companyName;
     private final String ticker;
     private final String sector;
+    private final String searchKeywords;
     private final Long currentPrice;
     private final Double changeRate;
     private final Long changePrice;
@@ -18,6 +19,7 @@ public class StockResponse {
         this.companyName = s.getCompanyName();
         this.ticker = s.getTicker();
         this.sector = s.getSector();
+        this.searchKeywords = s.getSearchKeywords();
         this.currentPrice = s.getCurrentPrice();
         this.changeRate = s.getChangeRate();
         this.changePrice = s.getChangePrice();
