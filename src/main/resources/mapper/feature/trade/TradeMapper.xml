@@ -26,10 +26,14 @@
         trade.remaining_balance as remainingBalance,
         trade.trade_at AS tradeAt,
         NULL as reasonTag,
-        NULL as reasonText
+        NULL as reasonText,
+        st.status          as settlementStatus,
+        st.settle_date     as settleDate
         FROM trade
         LEFT JOIN stock
         ON trade.sid = stock.sid
+        LEFT JOIN reason     ON reason.tid = trade.tid AND reason.is_deleted = false
+        LEFT JOIN settlement st ON st.tid = trade.tid
         WHERE trade.user_id = #{userId}
         ORDER BY trade.trade_at DESC
     </select>
@@ -66,11 +70,14 @@
             trade.remaining_balance as remainingBalance,
             trade.trade_at AS tradeAt,
             NULL as reasonTag,
-            NULL as reasonText
+            NULL as reasonText,
+            st.status          as settlementStatus,
+            st.settle_date     as settleDate
         FROM trade
-            LEFT JOIN stock
-            ON trade.sid = stock.sid
-        WHERE trade.user_id = #{userId} AND trade.tid = #{tid}
+            LEFT JOIN stock         ON trade.sid = stock.sid
+            LEFT JOIN reason        ON reason.tid = trade.tid AND reason.is_deleted = false
+            LEFT JOIN settlement st ON st.tid = trade.tid
+            WHERE trade.user_id = #{userId} AND trade.tid = #{tid}
     </select>
 
     <select id="countByUserId" parameterType="Long" resultType="int">

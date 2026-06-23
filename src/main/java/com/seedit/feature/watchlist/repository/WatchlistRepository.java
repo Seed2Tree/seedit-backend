@@ -11,6 +11,7 @@ public interface WatchlistRepository {
     List<Watchlist> findByUserId(@Param("userId") Long userId);
     int countByUserIdAndSid(@Param("userId") Long userId, @Param("sid") Long sid);
     int countStockBySid(@Param("sid") Long sid);
+    int countStockNumByUserId(@Param("userId") Long userId);
     int insert(@Param("userId") Long userId, @Param("sid") Long sid);
     int deleteByUserIdAndSid(@Param("userId") Long userId, @Param("sid") Long sid);
 }

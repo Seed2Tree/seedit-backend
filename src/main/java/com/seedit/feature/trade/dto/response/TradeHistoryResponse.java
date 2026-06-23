@@ -1,7 +1,9 @@
 package com.seedit.feature.trade.dto.response;
 
+import com.seedit.feature.settlement.domain.SettlementStatus;
 import com.seedit.feature.trade.domain.TradeType;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 // 과거 거래 이력 조회
@@ -19,6 +21,8 @@ public record TradeHistoryResponse (
         Long remainingBalance,
         LocalDateTime tradeAt,
         String reasonTag,
-        String reasonText
+        String reasonText,
+        SettlementStatus settlementStatus,
+        LocalDate settleDate
 ){
 }

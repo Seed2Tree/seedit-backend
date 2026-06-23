@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.seedit.feature.settlement.repository.SettlementRepository">
+
+    <insert id="save" parameterType="com.seedit.feature.settlement.domain.Settlement"
+            useGeneratedKeys="true" keyProperty="settlementId">
+        INSERT INTO settlement (user_id, tid, amount, trade_date, settle_date, status, created_at)
+        VALUES (#{userId}, #{tid}, #{amount}, #{tradeDate}, #{settleDate}, #{status}, #{createdAt})
+    </insert>
+
+    <select id="findPendingDue" resultType="com.seedit.feature.settlement.domain.Settlement">
+        SELECT settlement_id, user_id, tid, amount, trade_date, settle_date, status, settled_at, created_at
+        FROM settlement
+        WHERE status = 'PENDING' AND settle_date &lt;= #{today}
+    </select>
+
+    <update id="markSettled">
+        UPDATE settlement SET status = 'SETTLED', settled_at = #{now}
+        WHERE settlement_id = #{settlementId}
+    </update>
+
+    <select id="sumPendingByUser" resultType="long">
+        SELECT COALESCE(SUM(amount), 0) FROM settlement
+        WHERE user_id = #{userId} AND status = 'PENDING'
+    </select>
+
+    <select id="findByUserId" resultType="com.seedit.feature.settlement.dto.response.SettlementResponse">
+        SELECT st.settlement_id, s.ticker, s.company_name AS companyName,
+        st.amount, st.trade_date, st.settle_date, st.status
+        FROM settlement st
+        JOIN trade t ON t.tid = st.tid
+        JOIN stock s ON s.sid = t.sid
+        WHERE st.user_id = #{userId}
+        <if test="status != null"> AND st.status = #{status} </if>
+        ORDER BY st.settle_date DESC
+    </select>
+</mapper>

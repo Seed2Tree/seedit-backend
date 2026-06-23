@@ -7,11 +7,12 @@ USE seedit;
 -- 의존성을 고려한 기존 테이블 삭제 (자식 테이블부터 삭제)
 DROP TABLE IF EXISTS study_bookmark;
 DROP TABLE IF EXISTS investment_study;
-DROP TABLE IF EXISTS hankyung_daily_report;
+DROP TABLE IF EXISTS ai_report;
 DROP TABLE IF EXISTS news_content;
 DROP TABLE IF EXISTS watchlist;
 DROP TABLE IF EXISTS diary;
 DROP TABLE IF EXISTS reason;
+DROP TABLE IF EXISTS settlement;
 DROP TABLE IF EXISTS trade;
 DROP TABLE IF EXISTS portfolio;
 DROP TABLE IF EXISTS stock_detail;
@@ -134,6 +135,19 @@ CREATE TABLE trade (
     FOREIGN KEY (sdid) REFERENCES stock_detail(sdid)
 ) COMMENT '매수/매도 거래 내역';
 
+CREATE TABLE settlement (
+  settlement_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  user_id    BIGINT NOT NULL,
+  tid        BIGINT,                          -- 어떤 매도 거래에서 발생
+  amount     BIGINT NOT NULL,                 -- 정산 예정 금액(매도대금)
+  trade_date DATE   NOT NULL,
+  settle_date DATE  NOT NULL,                 -- 영업일 +2
+  status     VARCHAR(10) NOT NULL DEFAULT 'PENDING',  -- PENDING / SETTLED
+  settled_at DATETIME,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES user_account(user_id) ON DELETE CASCADE,
+  INDEX idx_settlement_pending (status, settle_date)   -- 스케줄러 조회용
+);
 
 CREATE TABLE reason (
     rid            BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '가설 고유 ID',
@@ -211,7 +225,11 @@ CREATE TABLE news_content  (
 -- (stock_code, bsns_year, reprt_code) 단위로 1건. 분기별 저장/업데이트.
 CREATE TABLE IF NOT EXISTS ai_report (
     arid        BIGINT       NOT NULL AUTO_INCREMENT,
+<<<<<<< Updated upstream
     rcept_no     VARCHAR(14), 
+=======
+    rcept_no 	VARCHAR(14), 
+>>>>>>> Stashed changes
     stock_code  VARCHAR(6)   NOT NULL,                 -- 종목코드(=ticker)
     bsns_year   INT          NOT NULL,                 -- 사업연도 (예: 2025)
     reprt_code  VARCHAR(5)   NOT NULL,                 -- 11011 사업/11012 반기/11013 1Q/11014 3Q
@@ -221,5 +239,9 @@ CREATE TABLE IF NOT EXISTS ai_report (
     updated_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (arid),
     UNIQUE KEY uq_report (stock_code, bsns_year, reprt_code)
+<<<<<<< Updated upstream
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+=======
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+>>>>>>> Stashed changes

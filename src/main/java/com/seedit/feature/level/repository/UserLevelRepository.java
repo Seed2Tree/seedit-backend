@@ -11,4 +11,8 @@ public interface UserLevelRepository {
     int insertDefaultLevel(@Param("userId") Long userId);
 
     Optional<UserLevel> selectByUserId(@Param("userId") Long userId);
+
+    int updatePointAndLevel(@Param("userId") Long userId,
+                            @Param("point") int point,
+                            @Param("level") int level);
 }

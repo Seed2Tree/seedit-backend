@@ -12,6 +12,8 @@ public enum ErrorCode {
     COMMON_INTERNAL(HttpStatus.INTERNAL_SERVER_ERROR, "COMMON_INTERNAL", "일시적인 오류가 발생했습니다."),
 
     AUTH_INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "AUTH_INVALID_CREDENTIALS", "이메일 또는 비밀번호가 올바르지 않습니다."),
+    AUTH_INVALID_PASSWORD(HttpStatus.UNAUTHORIZED, "AUTH_INVALID_PASSWORD", "현재 비밀번호가 일치하지 않습니다."),
+    AUTH_DUPLICATED_PASSWORD(HttpStatus.UNAUTHORIZED, "AUTH_DUPLICATED_PASSWORD", "기존 비밀번호와 다른 비밀번호를 입력해주세요."),
     AUTH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "AUTH_TOKEN_EXPIRED", "로그인이 만료되었습니다. 다시 로그인해 주세요."),
     AUTH_FORBIDDEN(HttpStatus.FORBIDDEN, "AUTH_FORBIDDEN", "접근 권한이 없습니다."),
     AUTH_EMAIL_DUPLICATED(HttpStatus.CONFLICT, "AUTH_EMAIL_DUPLICATED", "이미 가입된 이메일입니다."),

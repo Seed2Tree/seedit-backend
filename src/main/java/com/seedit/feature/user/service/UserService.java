@@ -12,7 +12,7 @@ public interface UserService {
 
     boolean updateUser(UserAccount userAccount);
 
-    boolean updatePassword(String email, String newRawPassword);
+    boolean updatePassword(String email, String curPassword, String newRawPassword);
 
     boolean deleteUser(Long userId);
 
