@@ -8,6 +8,8 @@ import com.seedit.feature.diary.dto.request.DiaryUpdateRequest;
 import com.seedit.feature.diary.dto.response.DiaryDetailResponse;
 import com.seedit.feature.diary.dto.response.DiaryListItem;
 import com.seedit.feature.diary.repository.DiaryRepository;
+import com.seedit.feature.level.domain.PointReason;
+import com.seedit.feature.level.service.LevelService;
 import com.seedit.feature.stock.repository.StockRepository;
 import com.seedit.feature.trade.dto.response.TradeHistoryResponse;
 import com.seedit.feature.trade.repository.TradeRepository;
@@ -36,7 +38,7 @@ public class DiaryService {
     private final TradeRepository tradeRepository;
     private final StockRepository stockRepository;
     private final UserAccountRepository userAccountRepository;
-
+    private final LevelService levelService;
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Value("${app.ai.api-key}")
@@ -102,6 +104,7 @@ public class DiaryService {
             throw new BusinessException(ErrorCode.DIARY_ALREADY_WRITTEN_TODAY, "해당 날짜에 이미 일지를 작성했습니다.");
         }
         diaryRepository.insert(userId, request.diaryDate(), request.content());
+        levelService.addPoint(userId, PointReason.DIARY);
         return diaryRepository.findByUserIdAndDate(userId, request.diaryDate())
                 .map(DiaryDetailResponse::from)
                 .orElseThrow(() -> new BusinessException(ErrorCode.COMMON_INTERNAL, "일지 저장에 실패했습니다."));

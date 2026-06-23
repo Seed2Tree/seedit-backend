@@ -66,12 +66,12 @@ public class UserController {
     @PutMapping("/password")
     public ApiResponse<String> changePassword(
             Authentication authentication,
-            @RequestBody PasswordUpdateRequest request
+            @Valid @RequestBody PasswordUpdateRequest request
             ){
 
         String currentEmail = authentication.getName();
 
-        boolean isSucess = userService.updatePassword(currentEmail,request.newPassword());
+        boolean isSucess = userService.updatePassword(currentEmail,request.curPassword(),request.newPassword());
         if(!isSucess){
             throw new BusinessException(ErrorCode.COMMON_INTERNAL, "비밀번호 변경에 실패했습니다.");
         }
@@ -96,6 +96,14 @@ public class UserController {
         }
         return ApiResponse.ok("회원 탈퇴가 정상적으로 삭제되었습니다.");
     }
+
+    @PostMapping("/reset")
+    public ApiResponse<String> resetUser(
+            Authentication authentication){
+        return ApiResponse.ok("회원 초기화가 정상적으로 완료되었습니다.");
+    }
+
+
 
 
 }

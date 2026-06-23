@@ -3,14 +3,18 @@ package com.seedit.feature.user.service;
 import com.seedit.feature.balance.domain.BalanceHistory;
 import com.seedit.feature.balance.dto.response.BalanceHistoryResponse;
 import com.seedit.feature.balance.repository.BalanceHistoryRepository;
+import com.seedit.feature.diary.repository.DiaryRepository;
 import com.seedit.feature.level.domain.UserLevel;
 import com.seedit.feature.level.repository.LevelDefinitionRepository;
 import com.seedit.feature.level.repository.UserLevelRepository;
+import com.seedit.feature.level.service.LevelService;
+import com.seedit.feature.study.repository.StudyRepository;
 import com.seedit.feature.trade.domain.TradeType;
 import com.seedit.feature.trade.repository.TradeRepository;
 import com.seedit.feature.user.domain.UserAccount;
 import com.seedit.feature.user.dto.response.UserProfileResponse;
 import com.seedit.feature.user.repository.UserAccountRepository;
+import com.seedit.feature.watchlist.repository.WatchlistRepository;
 import com.seedit.global.error.BusinessException;
 import com.seedit.global.error.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -29,10 +33,11 @@ public class UserServiceImpl implements UserService{
     private final LevelDefinitionRepository levelDefinitionRepository;
 
     private final BalanceHistoryRepository balanceHistoryRepository;
-//    private final TradeRepository tradeRepository;
-//    private final DiaryRepository diaryRepository;
-//    private final WatchlistRepository watchlistRepository;
-//    private final StudyBookmarkRepository studyBookmarkRepository;
+    private final TradeRepository tradeRepository;
+    private final DiaryRepository diaryRepository;
+    private final WatchlistRepository watchlistRepository;
+    private final StudyRepository studyRepository;
+    private final LevelService levelService;
 
     private static final Long INITIAL_BALANCE = 5000000L;
     // 회원 가입 로직
@@ -70,12 +75,19 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public boolean updatePassword(String email, String newRawPassword) {
+    public boolean updatePassword(String email, String curPassword, String newRawPassword) {
         UserAccount user = userAccountRepository.findUserByEmail(email)
                 .orElseThrow(()->new BusinessException(ErrorCode.COMMON_NOT_FOUND,"존재하지 않는 회원입니다. email="+email));
 
-        String encodedPassword = passwordEncoder.encode(newRawPassword);
+        if(!passwordEncoder.matches(curPassword, user.getPasswordHash())){
+            throw new BusinessException(ErrorCode.AUTH_INVALID_PASSWORD,"현재 비밀번호가 일치하지 않습니다.");
+        }
 
+        if(passwordEncoder.matches(newRawPassword, user.getPasswordHash())){
+            throw new BusinessException(ErrorCode.COMMON_VALIDATION,"기존 비밀번호와 다른 비밀번호를 입력해주세요.");
+        }
+
+        String encodedPassword = passwordEncoder.encode(newRawPassword);
         return userAccountRepository.updatePassword(user.getUserId(),encodedPassword) == 1;
     }
 
@@ -100,15 +112,17 @@ public class UserServiceImpl implements UserService{
                 .orElseThrow(()-> new BusinessException(ErrorCode.COMMON_NOT_FOUND,"사용자의 레벨 정보가 존재하지 않습니다."));
 
         String levelName = levelDefinitionRepository.findLevelNameByLevel(userLevel.getLevel());
+        int nextLevelPoint = levelService.getNextLevelPoint(userLevel.getLevel());
+        var levelInfo = new UserProfileResponse.LevelInfo(
+                userLevel.getLevel(), levelName, userLevel.getPoint(), nextLevelPoint);
 
-//        int transactionCount = tradeRepository.countByUserId(userAccount.getUserId());
-//        int diaryCount = diaryRepository.countByUserId(userAccount.getUserId());
-//        int watchlistCount = watchlistRepository.countByUserId(userAccount.getUserId());
-//        int studyBookmarkCount = studyBookmarkRepository.countByUserId(userAccount.getUserId());
 
-        UserProfileResponse.LevelInfo levelInfo = new UserProfileResponse.LevelInfo(userLevel.getLevel(), levelName,userLevel.getPoint());
-//        UserProfileResponse.ActivityInfo activityInfo = new UserProfileResponse.ActivityInfo(transactionCount, diaryCount, watchlistCount, studyBookmarkCount);
-        UserProfileResponse.ActivityInfo activityInfo = new UserProfileResponse.ActivityInfo(0,0,0,0);
+        int transactionCount = tradeRepository.countByUserId(userAccount.getUserId());
+        int diaryCount = diaryRepository.countByUserId(userAccount.getUserId());
+        int watchlistCount = watchlistRepository.countStockNumByUserId(userAccount.getUserId());
+        int studyBookmarkCount = 0;
+
+        UserProfileResponse.ActivityInfo activityInfo = new UserProfileResponse.ActivityInfo(transactionCount, diaryCount, watchlistCount, studyBookmarkCount);
 
         return UserProfileResponse.from(userAccount, levelInfo, activityInfo);
     }

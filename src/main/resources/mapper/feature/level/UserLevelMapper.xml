@@ -17,4 +17,10 @@
         FROM user_level
         WHERE user_id = #{userId}
     </select>
+
+    <update id="updatePointAndLevel">
+        UPDATE user_level
+        SET point = #{point}, level = #{level}, updated_at = NOW()
+        WHERE user_id = #{userId}
+    </update>
 </mapper>

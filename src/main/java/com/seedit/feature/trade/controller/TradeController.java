@@ -6,6 +6,7 @@ import com.seedit.feature.trade.dto.response.*;
 import com.seedit.feature.trade.service.TradeService;
 import com.seedit.global.response.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.Authentication;
@@ -31,7 +32,7 @@ public class TradeController {
      */
     @PostMapping("/buy")
     public ApiResponse<BuyResponse> orderStock(
-            @RequestBody TradeRequest request,
+            @Valid @RequestBody TradeRequest request,
             Authentication authentication
             ){
         BuyResponse response = tradeService.processOrder(authentication.getName(), request);
@@ -47,7 +48,7 @@ public class TradeController {
      */
     @PostMapping("/sell")
     public ApiResponse<SellResponse> sellStock(
-            @RequestBody TradeRequest request,
+            @Valid @RequestBody TradeRequest request,
             Authentication authentication
     ){
         SellResponse response = tradeService.processSell(authentication.getName(), request);

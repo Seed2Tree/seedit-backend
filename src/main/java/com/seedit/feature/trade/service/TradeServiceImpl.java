@@ -2,10 +2,16 @@ package com.seedit.feature.trade.service;
 
 import com.seedit.feature.balance.domain.BalanceHistory;
 import com.seedit.feature.balance.repository.BalanceHistoryRepository;
+import com.seedit.feature.level.domain.PointReason;
+import com.seedit.feature.level.service.LevelService;
 import com.seedit.feature.portfolio.domain.Portfolio;
 import com.seedit.feature.portfolio.repository.PortfolioRepository;
 import com.seedit.feature.reason.domain.Reason;
 import com.seedit.feature.reason.repository.ReasonRepository;
+import com.seedit.feature.settlement.domain.Settlement;
+import com.seedit.feature.settlement.domain.SettlementStatus;
+import com.seedit.feature.settlement.repository.SettlementRepository;
+import com.seedit.feature.settlement.service.SettlementService;
 import com.seedit.feature.stock.domain.Stock;
 import com.seedit.feature.stock.domain.StockDetail;
 import com.seedit.feature.stock.repository.StockRepository;
@@ -20,6 +26,7 @@ import com.seedit.feature.user.domain.UserAccount;
 import com.seedit.feature.user.repository.UserAccountRepository;
 import com.seedit.global.error.BusinessException;
 import com.seedit.global.error.ErrorCode;
+import com.seedit.global.util.BusinessDayUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +43,10 @@ public class TradeServiceImpl implements TradeService{
     private final StockRepository stockRepository;
 
     private final UserAccountRepository userAccountRepository;
+
+    private final SettlementService settlementService;
+
+    private final LevelService levelService;
 
     private final BalanceHistoryRepository balanceHistoryRepository;
 
@@ -136,7 +147,7 @@ public class TradeServiceImpl implements TradeService{
 
         balanceHistoryRepository.save(history);
         reasonRepository.save(reason);
-
+        levelService.addPoint(userAccount.getUserId(), PointReason.TRADE);
         return BuyResponse.from(trade, reason);
     }
 
@@ -171,7 +182,7 @@ public class TradeServiceImpl implements TradeService{
         int remainingQuantity = existing.getQuantity() - request.quantity();
 
         // 잔액 증가
-        nextBalance += totalAmount;
+//        nextBalance += totalAmount;
         finalQuantity = -request.quantity();
 
         long newTotal = existing.getAvgPrice() * remainingQuantity;   // 평단은 유지, 남은 수량만큼 원가
@@ -179,13 +190,6 @@ public class TradeServiceImpl implements TradeService{
         existing.setTotalAmount(newTotal);
         existing.setUpdatedAt(executionTime);
         portfolioRepository.updateOneByuserIdAndsid(existing);
-
-
-
-        // 유저 정보 업데이트
-        userAccount.setBalance(nextBalance);
-        userAccountRepository.updateBalance(userAccount.getUserId(),nextBalance);
-
 
         Trade trade = Trade.builder()
                 .userId(userAccount.getUserId())
@@ -199,15 +203,23 @@ public class TradeServiceImpl implements TradeService{
                 .tradeAt(executionTime)
                 .build();
 
-        BalanceHistory history = BalanceHistory.builder()
-                .userId(userAccount.getUserId())
-                .amount(totalAmount)
-                .currentBalance(nextBalance)
-                .reasonType(request.tradeType())
-                .createdAt(executionTime)
-                .build();
-
         tradeRepository.save(trade);
+
+        // 유저 정보 업데이트
+//        userAccount.setBalance(nextBalance);
+//        userAccountRepository.updateBalance(userAccount.getUserId(),nextBalance);
+        LocalDate today = executionTime.toLocalDate();
+        settlementService.reserve(userAccount.getUserId(), trade.getTid(), totalAmount, today);
+
+        //        BalanceHistory history = BalanceHistory.builder()
+//                .userId(userAccount.getUserId())
+//                .amount(totalAmount)
+//                .currentBalance(nextBalance)
+//                .reasonType(request.tradeType())
+//                .createdAt(executionTime)
+//                .build();
+//        balanceHistoryRepository.save(history);
+
 
         Reason reason = Reason.builder()
                 .userId(userAccount.getUserId())
@@ -220,10 +232,9 @@ public class TradeServiceImpl implements TradeService{
                 .isDeleted(false)
                 .createdAt(executionTime)
                 .build();
-
-        balanceHistoryRepository.save(history);
         reasonRepository.save(reason);
 
+        levelService.addPoint(userAccount.getUserId(), PointReason.TRADE);
         return SellResponse.from(trade, reason);
     }
 

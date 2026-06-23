@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 
 public record PasswordUpdateRequest (
+        @NotBlank(message = "기존 비밀번호를 입력해주세요.")
+        String curPassword,
         @NotBlank(message = "비밀번호는 필수입니다.")
         @Pattern(
                 regexp="^(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#$%^&*])[A-Za-z\\d!@#$%^&*]{8,20}$",
@@ -12,4 +14,3 @@ public record PasswordUpdateRequest (
         )
         String newPassword
 ){}
-// 동일한 password 인가?

@@ -23,6 +23,8 @@ public interface DiaryRepository {
     int countByUserIdAndDate(@Param("userId") Long userId,
                              @Param("diaryDate") LocalDate diaryDate);
 
+    int countByUserId(@Param("userId") Long userId);
+
     int insert(@Param("userId") Long userId,
                @Param("diaryDate") LocalDate diaryDate,
                @Param("content") String content);

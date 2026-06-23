@@ -22,11 +22,7 @@ public record UserProfileResponse (
 
 ){
 
-    public record LevelInfo (
-            int level,
-            String levelName,
-            int point
-    ) {}
+    public record LevelInfo(int level, String levelName, int point, int nextLevelPoint) {}
 
     public record ActivityInfo (
             int transactionCount,

@@ -23,6 +23,12 @@
         WHERE sid = #{sid}
     </select>
 
+    <select id="countStockNumByUserId" resultType="int">
+        SELECT DISTINCT COUNT(sid)
+        FROM watchlist
+        WHERE user_id = #{userId}
+    </select>
+
     <insert id="insert">
         INSERT INTO watchlist (user_id, sid)
         VALUES (#{userId}, #{sid})

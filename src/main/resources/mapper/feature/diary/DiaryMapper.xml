@@ -34,6 +34,12 @@
           AND diary_date = #{diaryDate}
     </select>
 
+    <select id="countByUserId" resultType="int">
+        SELECT COUNT(*)
+        FROM diary
+        WHERE user_id = #{userId}
+    </select>
+
     <insert id="insert">
         INSERT INTO diary (user_id, diary_date, content)
         VALUES (#{userId}, #{diaryDate}, #{content})
