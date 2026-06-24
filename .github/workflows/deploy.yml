@@ -44,5 +44,6 @@ jobs:
             sleep 3
             source /home/ubuntu/env.sh
             nohup java -jar /home/ubuntu/seedit-0.0.1-SNAPSHOT.jar > /home/ubuntu/app.log 2>&1 &
+            disown
             sleep 10
             ps aux | grep seedit
