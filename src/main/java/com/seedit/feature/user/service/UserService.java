@@ -14,6 +14,8 @@ public interface UserService {
 
     boolean updatePassword(String email, String curPassword, String newRawPassword);
 
+    UserAccount resetUser(String email);
+
     boolean deleteUser(Long userId);
 
     boolean existsByEmail(String email);

@@ -36,6 +36,8 @@ public interface DiaryRepository {
     int delete(@Param("did") Long did,
                @Param("userId") Long userId);
 
+    int deleteByUserId(@Param("userId") Long userId);
+
     Optional<Diary> findByDidAndUserId(@Param("did") Long did,
                                        @Param("userId") Long userId);
 

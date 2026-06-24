@@ -39,9 +39,19 @@
         DELETE FROM study_bookmark WHERE user_id = #{userId} AND isid = #{isid}
     </delete>
 
+
+    <delete id="deleteByUserId">
+        DELETE FROM study_bookmark WHERE user_id = #{userId}
+    </delete>
+
     <!-- 중복 체크 -->
     <select id="countBookmark" resultType="int">
         SELECT COUNT(*) FROM study_bookmark WHERE user_id = #{userId} AND isid = #{isid}
+    </select>
+
+    <!-- 즐겨 찾기 개수 -->
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*) FROM study_bookmark WHERE user_id = #{userId}
     </select>
 
     <!-- 내 즐겨찾기 isid 목록 (프론트 상태 초기화용) -->

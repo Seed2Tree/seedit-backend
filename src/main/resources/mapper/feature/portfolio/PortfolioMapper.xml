@@ -54,4 +54,9 @@
         FROM portfolio
         WHERE user_id = #{userId} AND sid = #{sid}
     </select>
+
+
+    <delete id="deleteByUserId">
+        DELETE FROM portfolio WHERE user_id = #{userId}
+    </delete>
 </mapper>

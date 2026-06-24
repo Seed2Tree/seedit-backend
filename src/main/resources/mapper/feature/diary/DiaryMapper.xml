@@ -58,6 +58,11 @@
           AND user_id = #{userId}
     </delete>
 
+
+    <delete id="deleteByUserId">
+        DELETE FROM diary WHERE user_id = #{userId}
+    </delete>
+
     <select id="findByDidAndUserId" resultType="Diary">
         SELECT did, user_id, diary_date, content, ai_feedback, created_at
         FROM diary

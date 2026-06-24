@@ -97,9 +97,11 @@ public class UserController {
         return ApiResponse.ok("회원 탈퇴가 정상적으로 삭제되었습니다.");
     }
 
-    @PostMapping("/reset")
+    @PostMapping("/me/reset")
     public ApiResponse<String> resetUser(
             Authentication authentication){
+        String currentEmail = authentication.getName();
+        userService.resetUser(currentEmail);
         return ApiResponse.ok("회원 초기화가 정상적으로 완료되었습니다.");
     }
 

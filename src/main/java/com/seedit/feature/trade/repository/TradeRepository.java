@@ -25,6 +25,8 @@ public interface TradeRepository {
 
     int countByUserId(@Param("userId") Long userId); // INIT 트랜잭션 확인 및 거래 횟수 조회
 
+    int deleteByUserId(@Param("userId") Long userId);
+
     int findTotalQuantityByStockId(@Param("userId") Long userId, @Param("sid") Long sid);
 
     List<TradeHistoryResponse> findAllByUserIdAndDate(@Param("userId") Long userId,

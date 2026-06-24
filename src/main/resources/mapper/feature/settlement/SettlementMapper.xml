@@ -36,4 +36,8 @@
         <if test="status != null"> AND st.status = #{status} </if>
         ORDER BY st.settle_date DESC
     </select>
+
+    <delete id="deleteByUserId">
+        DELETE FROM settlement WHERE user_id = #{userId}
+    </delete>
 </mapper>

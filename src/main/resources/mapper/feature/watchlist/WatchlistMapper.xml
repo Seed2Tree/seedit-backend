@@ -39,4 +39,8 @@
         WHERE user_id = #{userId} AND sid = #{sid}
     </delete>
 
+
+    <delete id="deleteByUserId">
+        DELETE FROM watchlist WHERE user_id = #{userId}
+    </delete>
 </mapper>

@@ -133,4 +133,7 @@
         ORDER BY DATE(trade_at)
     </select>
 
+    <delete id="deleteByUserId">
+        DELETE FROM trade WHERE user_id = #{userId}
+    </delete>
 </mapper>

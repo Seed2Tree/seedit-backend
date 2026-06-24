@@ -8,8 +8,15 @@ import com.seedit.feature.level.domain.UserLevel;
 import com.seedit.feature.level.repository.LevelDefinitionRepository;
 import com.seedit.feature.level.repository.UserLevelRepository;
 import com.seedit.feature.level.service.LevelService;
+import com.seedit.feature.portfolio.dto.response.PortfolioSummaryResponse;
+import com.seedit.feature.portfolio.repository.PortfolioRepository;
+import com.seedit.feature.portfolio.service.PortfolioService;
+import com.seedit.feature.reason.repository.ReasonRepository;
+import com.seedit.feature.settlement.repository.SettlementRepository;
+import com.seedit.feature.settlement.service.SettlementService;
 import com.seedit.feature.study.repository.StudyRepository;
 import com.seedit.feature.trade.domain.TradeType;
+import com.seedit.feature.trade.dto.response.TradeHistoryResponse;
 import com.seedit.feature.trade.repository.TradeRepository;
 import com.seedit.feature.user.domain.UserAccount;
 import com.seedit.feature.user.dto.response.UserProfileResponse;
@@ -19,6 +26,7 @@ import com.seedit.global.error.BusinessException;
 import com.seedit.global.error.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +46,10 @@ public class UserServiceImpl implements UserService{
     private final WatchlistRepository watchlistRepository;
     private final StudyRepository studyRepository;
     private final LevelService levelService;
+    private final PortfolioService portfolioService;
+    private final PortfolioRepository portfolioRepository;
+    private final SettlementRepository settlementRepository;
+    private final ReasonRepository reasonRepository;
 
     private static final Long INITIAL_BALANCE = 5000000L;
     // 회원 가입 로직
@@ -96,6 +108,52 @@ public class UserServiceImpl implements UserService{
         return userAccountRepository.deleteUser(userId) == 1;
     }
 
+    // 회원 초기화 로직
+    @Override
+    @Transactional
+    public UserAccount resetUser(String email) {
+        UserAccount userAccount = userAccountRepository.findUserByEmail(email)
+                .orElseThrow(() -> new BusinessException(ErrorCode.COMMON_NOT_FOUND,"해당 계정을 찾을 수 없습니다."));
+        Long userId = userAccount.getUserId();
+        // 정산 레포 초기화
+        settlementRepository.deleteByUserId(userId);
+
+        // 가설 초기화
+        reasonRepository.deleteByUserId(userId);
+
+        // 거래 초기화
+        tradeRepository.deleteByUserId(userId);
+
+        // 포트폴리오 초기화
+        portfolioRepository.deleteByUserId(userId);
+
+        // 거래 일지 초기화
+        diaryRepository.deleteByUserId(userId);
+
+        // 관심 종목 초기화
+        watchlistRepository.deleteByUserId(userId);
+
+        // 경제 유튜브 북마크 초기화
+        studyRepository.deleteByUserId(userId);
+
+
+        userAccountRepository.updateBalance(userId,INITIAL_BALANCE);
+        userAccountRepository.resetTotalInvested(userId);
+
+        // 레벨/포인트 초기화
+        userLevelRepository.updatePointAndLevel(userId,0,1);
+
+        BalanceHistory initHistory = BalanceHistory.builder()
+                .userId(userId)
+                .amount(INITIAL_BALANCE)
+                .currentBalance(INITIAL_BALANCE)
+                .reasonType(TradeType.INIT)
+                .build();
+
+        balanceHistoryRepository.save(initHistory);
+        return userAccount;
+    }
+
     @Override
     public boolean existsByEmail(String email) {
         return userAccountRepository.countByEmail(email) > 0;
@@ -115,12 +173,13 @@ public class UserServiceImpl implements UserService{
         int nextLevelPoint = levelService.getNextLevelPoint(userLevel.getLevel());
         var levelInfo = new UserProfileResponse.LevelInfo(
                 userLevel.getLevel(), levelName, userLevel.getPoint(), nextLevelPoint);
-
+        PortfolioSummaryResponse psr = portfolioService.findAllByUserId(userAccount.getUserId(),userAccount.getBalance());
+        userAccount.setTotalInvested(psr.totalEval());
 
         int transactionCount = tradeRepository.countByUserId(userAccount.getUserId());
         int diaryCount = diaryRepository.countByUserId(userAccount.getUserId());
         int watchlistCount = watchlistRepository.countStockNumByUserId(userAccount.getUserId());
-        int studyBookmarkCount = 0;
+        int studyBookmarkCount = studyRepository.countAll(userAccount.getUserId());
 
         UserProfileResponse.ActivityInfo activityInfo = new UserProfileResponse.ActivityInfo(transactionCount, diaryCount, watchlistCount, studyBookmarkCount);
 

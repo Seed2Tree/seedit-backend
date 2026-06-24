@@ -71,4 +71,8 @@
         WHERE user_id = #{userId}
     </select>
 
+
+    <delete id="deleteByUserId">
+        DELETE FROM reason WHERE user_id = #{userId}
+    </delete>
 </mapper>

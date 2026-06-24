@@ -94,7 +94,7 @@
         userId를 기준으로 해당 사용자 정보를 삭제합니다.
     -->
     <delete id="deleteUser" parameterType="Long">
-        DELETE From user_account
+        DELETE FROM user_account
         WHERE user_id= #{userId}
     </delete>
 
@@ -116,6 +116,12 @@
     <update id="updateBalance">
         UPDATE user_account
         SET balance = #{remainingBalance}
+        WHERE user_id = #{userId}
+    </update>
+
+    <update id="resetTotalInvested">
+        UPDATE user_account
+        SET total_invested = 0
         WHERE user_id = #{userId}
     </update>
 </mapper>

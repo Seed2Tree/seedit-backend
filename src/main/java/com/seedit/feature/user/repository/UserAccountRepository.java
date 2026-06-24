@@ -25,6 +25,8 @@ public interface UserAccountRepository {
 
     int updateBalance(@Param("userId") Long userId, @Param("remainingBalance") Long remainingBalance);
 
+    int resetTotalInvested(@Param("userId") Long userId);
+
     int deleteUser(Long userId);
 
 }

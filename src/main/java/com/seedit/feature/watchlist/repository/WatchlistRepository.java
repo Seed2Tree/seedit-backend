@@ -14,4 +14,5 @@ public interface WatchlistRepository {
     int countStockNumByUserId(@Param("userId") Long userId);
     int insert(@Param("userId") Long userId, @Param("sid") Long sid);
     int deleteByUserIdAndSid(@Param("userId") Long userId, @Param("sid") Long sid);
+    int deleteByUserId(@Param("userId") Long userId);
 }
