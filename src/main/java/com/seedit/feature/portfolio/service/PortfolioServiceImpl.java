@@ -33,9 +33,13 @@ public class PortfolioServiceImpl implements PortfolioService{
     public PortfolioSummaryResponse findAllByUserId(Long userId, Long balance) {
         List<PortfolioResponse> holdings =  portfolioRepository.findAllByUserId(userId);
 
+        // 총 매입금
         Long totalCost = holdings.stream().mapToLong(h -> h.avgPrice() * h.quantity()).sum();
+        // 총 평가금액
         Long totalEval = holdings.stream().mapToLong(h -> h.currentPrice() * h.quantity()).sum();
+        // 평가 손익
         Long totalProfit = totalEval - totalCost;
+        // 총 수익률
         double totalProfitRate = totalCost > 0 ? (double) totalProfit / totalCost * 100 : 0;
 
         return new PortfolioSummaryResponse(

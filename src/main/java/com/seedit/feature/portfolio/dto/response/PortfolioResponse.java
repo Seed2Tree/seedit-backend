@@ -9,8 +9,8 @@ public record PortfolioResponse (
     String ticker,
     int quantity,
     Long avgPrice,
-    Long evalProfit,
     Long currentPrice,
+    Long evalProfit,
     double profitRate
 ){
 }
