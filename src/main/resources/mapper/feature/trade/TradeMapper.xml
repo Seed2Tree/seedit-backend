@@ -110,10 +110,13 @@
             trade.remaining_balance as remainingBalance,
             trade.trade_at      as tradeAt,
             reason.reason_tag   as reasonTag,
-            reason.reason_text  as reasonText
+            reason.reason_text  as reasonText,
+            st.status          as settlementStatus,
+            st.settle_date     as settleDate
         FROM trade
         LEFT JOIN stock   ON trade.sid = stock.sid
         LEFT JOIN reason  ON reason.tid = trade.tid AND reason.is_deleted = false
+        LEFT JOIN settlement st ON st.tid = trade.tid
         WHERE trade.user_id = #{userId}
           AND DATE(trade.trade_at) = #{date}
         ORDER BY trade.trade_at
