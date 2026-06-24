@@ -41,13 +41,13 @@ app:
       - press : 한국경제
         url : ${HK_RSS_FEED_URL:https://www.hankyung.com/feed/all-news}
       - press : 매일경제
-        url : ${MK_RSS_FEED_URL}:https://www.mk.co.kr/rss/40300001/}
+        url : ${MK_RSS_FEED_URL:https://www.mk.co.kr/rss/40300001/}
       - press : 서울경제
-        url : ${SD_RSS_FEED_URL}:https://www.sedaily.com/rss/newsall}
+        url : ${SD_RSS_FEED_URL:https://www.sedaily.com/rss/newsall}
   dart:
     api-key : ${DART_API_KEY}
     base-url : ${DART_BASE_URL:https://opendart.fss.or.kr/api}
   gms:
-    key : ${GMS_KEY}
+    key : ${AI_API_KEY}
     model : ${GMS_MODEL:gemini-3.5-flash}
-    base-url : https://gms.ssafy.io/gmsapi/api.openai.com/v1
+    base-url : https://gms.ssafy.io/gmsapi/generativelanguage.googleapis.com/v1beta
