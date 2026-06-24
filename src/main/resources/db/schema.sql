@@ -67,6 +67,22 @@ CREATE TABLE user_level (
 ) COMMENT '사용자 현재 레벨 및 포인트';
 
 -- ====================================================================
+-- 0. 레벨 정의 (씨앗 → 나무 성장 테마, 6단계)
+--    이미 존재하는 level 행은 이름/기준점/혜택을 덮어씀
+-- ====================================================================
+INSERT INTO level_definition (level, level_name, required_point, benefits) VALUES
+(1, '씨앗',         0,    '기본 모의투자 자격 부여'),
+(2, '새싹 투자자',   100,  '투자 가설 태그 전체 해금'),
+(3, '묘목 트레이더', 300,  '일지 회고 통계 보기'),
+(4, '든든한 가지',   700,  '관심종목 무제한 등록'),
+(5, '큰나무 투자자', 1500, '프로필 뱃지 + AI 리포트 우선 제공'),
+(6, '숲의 현자',     3000, '명예 뱃지 + 전체 혜택')
+ON DUPLICATE KEY UPDATE
+level_name     = VALUES(level_name),
+required_point = VALUES(required_point),
+benefits       = VALUES(benefits);
+
+-- ====================================================================
 -- 2. 주식 종목 및 시세 도메인 (모의투자 필수 부모 테이블)
 -- ====================================================================
 CREATE TABLE stock (
@@ -236,3 +252,25 @@ CREATE TABLE IF NOT EXISTS ai_report (
     PRIMARY KEY (arid),
     UNIQUE KEY uq_report (stock_code, bsns_year, reprt_code)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS study_bookmark (
+    sbid    BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT   NOT NULL,
+    isid    BIGINT   NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_user_isid (user_id, isid),
+    FOREIGN KEY (user_id) REFERENCES user_account(user_id),
+    FOREIGN KEY (isid)    REFERENCES investment_study(isid)
+);
+
+CREATE TABLE IF NOT EXISTS study_comment (
+    scid       BIGINT AUTO_INCREMENT PRIMARY KEY,
+    isid       BIGINT  NOT NULL,
+    user_id    BIGINT  NOT NULL,
+    content    TEXT    NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (isid)    REFERENCES investment_study(isid) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES user_account(user_id)  ON DELETE CASCADE
+);
+

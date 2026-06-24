@@ -1,0 +1,57 @@
+# 백엔드 리포(Spring Boot)에 둘 파일
+# 경로: .github/workflows/deploy.yml
+
+name: Deploy Backend
+
+on:
+  push:
+    branches: [ main ]   # main 에 push 되면 자동 실행
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 코드 가져오기
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2. JDK 설치 (프로젝트 자바 버전에 맞추기)
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      # 3. JAR 빌드 (테스트 제외하고 빠르게)
+      - name: Build with Gradle
+        run: |
+          chmod +x ./gradlew
+          ./gradlew clean build -x test
+      # Maven 프로젝트면 위 두 줄 대신:
+      #   run: mvn clean package -DskipTests
+
+      # 4. 빌드된 JAR 을 EC2 로 전송
+      - name: Copy JAR to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}        # 보통 ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "build/libs/*.jar"
+          target: "/home/ubuntu/app"
+          strip_components: 2   # build/libs 경로 떼고 파일만 전송
+
+      # 5. EC2 접속해서 서비스 재시작
+      - name: Restart service on EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            # 전송된 jar 을 고정 이름으로 정리
+            mv /home/ubuntu/app/*.jar /home/ubuntu/app.jar
+            sudo systemctl restart myapp
+            sleep 3
+            sudo systemctl status myapp --no-pager
