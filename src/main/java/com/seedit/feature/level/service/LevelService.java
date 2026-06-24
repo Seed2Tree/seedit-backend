@@ -1,6 +1,7 @@
 package com.seedit.feature.level.service;
 
 import com.seedit.feature.level.domain.PointReason;
+import org.apache.ibatis.annotations.Param;
 
 public interface LevelService {
     void addPoint(Long userId, PointReason reason);

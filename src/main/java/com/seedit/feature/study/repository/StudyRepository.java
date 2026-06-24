@@ -21,7 +21,11 @@ public interface StudyRepository {
 
     void deleteBookmark(@Param("userId") Long userId, @Param("isid") Long isid);
 
+    int deleteByUserId(@Param("userId") Long userId);
+
     int countBookmark(@Param("userId") Long userId, @Param("isid") Long isid);
+
+    int countAll(@Param("userId") Long userId);
 
     List<Long> findBookmarkIdsByUserId(@Param("userId") Long userId);
 

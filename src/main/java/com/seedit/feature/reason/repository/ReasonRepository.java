@@ -20,4 +20,5 @@ public interface ReasonRepository {
 
     int countByUserId(@Param("userId") Long userId); // 가설 작성 횟수 조회
 
+    int deleteByUserId(@Param("userId") Long userId);
 }

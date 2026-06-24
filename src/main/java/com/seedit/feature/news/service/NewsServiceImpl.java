@@ -21,7 +21,8 @@ public class NewsServiceImpl implements NewsService{
     @Transactional
     @Override
     public int collectAndSave() {
-        List<RssArticle> articles = newsCollector.collectAll();
+        try {
+            List<RssArticle> articles = newsCollector.collectAll();
         int saved = 0;
         for (RssArticle a : articles){
             if(a.getLink() == null || a.getTitle() == null) continue;
@@ -32,7 +33,12 @@ public class NewsServiceImpl implements NewsService{
             news.setPublishedAt(a.getPubDate());
             saved += newsRepository.insertIgnore(news);
         }
-        return saved;
+            return saved;
+        }
+        catch (Exception e){
+            // 에러
+            return 0;
+        }
     }
 
     @Override

@@ -17,4 +17,5 @@ public interface PortfolioRepository {
 
     Portfolio findByUserIdAndSid(@Param("userId") Long userId, @Param("sid") Long sid); //  사용자의 특정 보유 주식 조회
 
+    int deleteByUserId(@Param("userId") Long userId);
 }

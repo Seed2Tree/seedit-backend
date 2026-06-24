@@ -18,4 +18,5 @@ public interface SettlementRepository {
     long sumPendingByUser(@Param("userId") Long userId);
     List<SettlementResponse> findByUserId(@Param("userId") Long userId,
                                           @Param("status") SettlementStatus status); // status null이면 전체
+    int deleteByUserId(@Param("userId") Long userId);
 }
