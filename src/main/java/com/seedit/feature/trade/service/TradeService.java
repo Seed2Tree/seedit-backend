@@ -20,7 +20,7 @@ public interface TradeService {
 
     List<TradeResponse> getHistoryListByStockId(String email, Long sid);
 
-    TradeHistoryResponse getHistoryListById(String email, Long tid);
+    TradeDetailResponse getHistoryListById(String email, Long tid);
 
     List<TradeHistoryResponse> getHistoryListByDate(String email, LocalDate date);
 

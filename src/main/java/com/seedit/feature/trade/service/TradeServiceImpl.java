@@ -8,6 +8,7 @@ import com.seedit.feature.portfolio.domain.Portfolio;
 import com.seedit.feature.portfolio.repository.PortfolioRepository;
 import com.seedit.feature.reason.domain.Reason;
 import com.seedit.feature.reason.repository.ReasonRepository;
+import com.seedit.feature.reason.service.ReasonService;
 import com.seedit.feature.settlement.domain.Settlement;
 import com.seedit.feature.settlement.domain.SettlementStatus;
 import com.seedit.feature.settlement.repository.SettlementRepository;
@@ -53,6 +54,7 @@ public class TradeServiceImpl implements TradeService{
     private final PortfolioRepository portfolioRepository;
 
     private final ReasonRepository reasonRepository;
+    private final ReasonService reasonService;
 
     @Override
     @Transactional
@@ -205,21 +207,13 @@ public class TradeServiceImpl implements TradeService{
 
         tradeRepository.save(trade);
 
+        if (request.verifiedReasonIds() != null) {
+            request.verifiedReasonIds().forEach(rid -> reasonService.verify(email, rid, trade.getTid()));
+        }
+
         // 유저 정보 업데이트
-//        userAccount.setBalance(nextBalance);
-//        userAccountRepository.updateBalance(userAccount.getUserId(),nextBalance);
         LocalDate today = executionTime.toLocalDate();
         settlementService.reserve(userAccount.getUserId(), trade.getTid(), totalAmount, today);
-
-        //        BalanceHistory history = BalanceHistory.builder()
-//                .userId(userAccount.getUserId())
-//                .amount(totalAmount)
-//                .currentBalance(nextBalance)
-//                .reasonType(request.tradeType())
-//                .createdAt(executionTime)
-//                .build();
-//        balanceHistoryRepository.save(history);
-
 
         Reason reason = Reason.builder()
                 .userId(userAccount.getUserId())
@@ -285,15 +279,22 @@ public class TradeServiceImpl implements TradeService{
     }
 
     @Override
-    public TradeHistoryResponse getHistoryListById(String email, Long tid) {
+    public TradeDetailResponse getHistoryListById(String email, Long tid) {
         UserAccount user = userAccountRepository.findUserByEmail(email)
-                .orElseThrow(()->new BusinessException(ErrorCode.COMMON_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.COMMON_NOT_FOUND));
         Long userId = user.getUserId();
 
-        TradeHistoryResponse response = tradeRepository.findByIdAndUserId(userId, tid)
-                .orElseThrow(()->new BusinessException(ErrorCode.COMMON_NOT_FOUND,"사용자 혹은 거래 내역을 찾을 수 없습니다."));
+        TradeHistoryResponse trade = tradeRepository.findByIdAndUserId(userId, tid)
+                .orElseThrow(() -> new BusinessException(
+                        ErrorCode.COMMON_NOT_FOUND, "사용자 혹은 거래 내역을 찾을 수 없습니다."));
 
-        return response;
+        // 매도일 때만 "이 매도에서 체결한 가설" 조회
+        List<VerifiedReasonResponse> verifiedReasons =
+                trade.tradeType() == TradeType.SELL
+                        ? reasonRepository.findByUserIdAndVerifiedTid(userId, tid)
+                        : List.of();
+
+        return new TradeDetailResponse(trade, verifiedReasons);
     }
 
     @Override

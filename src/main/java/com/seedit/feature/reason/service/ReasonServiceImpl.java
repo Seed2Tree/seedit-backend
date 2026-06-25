@@ -22,7 +22,7 @@ public class ReasonServiceImpl implements ReasonService{
 
     @Override
     @Transactional
-    public void verify(String email, Long rid) {
+    public void verify(String email, Long rid, Long sellTid){
         UserAccount user = userAccountRepository.findUserByEmail(email)
                 .orElseThrow(() -> new BusinessException(ErrorCode.COMMON_NOT_FOUND, "사용자를 찾을 수 없습니다."));
 
@@ -32,7 +32,7 @@ public class ReasonServiceImpl implements ReasonService{
         // 이미 검증된 가설이면 멱등 처리 (중복 30P 방지)
         if (Boolean.TRUE.equals(reason.getIsVerified())) return;
 
-        reasonRepository.updateVerified(user.getUserId(), rid);
+        reasonRepository.updateVerified(user.getUserId(), rid, sellTid);
         levelService.addPoint(user.getUserId(), PointReason.HYPOTHESIS_VERIFIED); // 기획에 이미 있는 30P
     }
 }

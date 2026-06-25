@@ -18,9 +18,9 @@ public class ReasonController {
 
     private final ReasonService reasonService;
 
-    @PatchMapping("/{rid}/verify")
-    public ApiResponse<Void> verifyReason(Authentication authentication, @PathVariable Long rid) {
-        reasonService.verify(authentication.getName(), rid);
-        return ApiResponse.ok(null);
-    }
+//    @PatchMapping("/{rid}/verify")
+//    public ApiResponse<Void> verifyReason(Authentication authentication, @PathVariable Long rid) {
+//        reasonService.verify(authentication.getName(), rid);
+//        return ApiResponse.ok(null);
+//    }
 }

@@ -176,6 +176,7 @@ CREATE TABLE reason (
     is_verified    BOOLEAN DEFAULT false COMMENT '가설 검증 완료 여부',
     is_deleted 	   BOOLEAN DEFAULT false COMMENT '소프트 삭제 여부',
     created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '생성 일시',
+    verified_tid BIGINT NULL,
 	FOREIGN KEY (user_id) REFERENCES user_account(user_id) ON DELETE CASCADE,
     FOREIGN KEY (tid) REFERENCES trade(tid) ON DELETE SET NULL
 ) COMMENT '투자 가설 이유';

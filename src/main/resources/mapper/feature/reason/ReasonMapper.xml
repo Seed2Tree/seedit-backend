@@ -41,7 +41,8 @@
         reason_text AS reasonText,
         is_verified AS isVerified,
         is_deleted AS isDeleted,
-        created_at AS createdAt
+        created_at AS createdAt,
+        verified_tid AS verifiedTid
         FROM reason
         WHERE user_id = #{userId} AND rid = #{rid}
     </select>
@@ -49,7 +50,7 @@
     <!-- 신규: 가설 검증 처리 -->
     <update id="updateVerified">
         UPDATE reason
-        SET is_verified = true
+        SET is_verified = true, verified_tid = #{sellTid}
         WHERE user_id = #{userId} AND rid = #{rid} AND is_deleted = false
     </update>
 
@@ -58,7 +59,7 @@
         SELECT r.rid, r.user_id AS userId, r.tid, r.reason_type AS reasonType,
         r.reason_date AS reasonDate, r.reason_tag AS reasonTag,
         r.reason_text AS reasonText, r.is_verified AS isVerified,
-        r.is_deleted AS isDeleted, r.created_at AS createdAt
+        r.is_deleted AS isDeleted, r.created_at AS createdAt, r.verified_tid AS verifiedTid
         FROM reason r
         JOIN trade t ON r.tid = t.tid
         WHERE r.user_id = #{userId}
@@ -81,4 +82,17 @@
     <delete id="deleteByUserId">
         DELETE FROM reason WHERE user_id = #{userId}
     </delete>
+
+    <select id="findByUserIdAndVerifiedTid" resultType="VerifiedReasonResponse">
+        SELECT
+        rid,
+        reason_tag  AS reasonTag,
+        reason_text AS reasonText,
+        reason_date AS reasonDate
+        FROM reason
+        WHERE user_id = #{userId}
+        AND verified_tid = #{tid}
+        AND is_deleted = false
+        ORDER BY reason_date
+    </select>
 </mapper>

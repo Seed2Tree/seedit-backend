@@ -133,11 +133,11 @@ public class TradeController {
      * @return
      */
     @GetMapping("/{tid}")
-    public ApiResponse<TradeHistoryResponse> getTradeHistoryById(
+    public ApiResponse<TradeDetailResponse> getTradeHistoryById(
             Authentication authentication,
             @PathVariable Long tid
     ) {
-        TradeHistoryResponse response = tradeService.getHistoryListById(authentication.getName(), tid);
+        TradeDetailResponse response = tradeService.getHistoryListById(authentication.getName(), tid);
 
         return ApiResponse.ok(response);
     }

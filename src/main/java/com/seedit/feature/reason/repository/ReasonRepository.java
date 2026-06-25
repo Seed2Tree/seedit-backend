@@ -2,6 +2,7 @@ package com.seedit.feature.reason.repository;
 
 import com.seedit.feature.reason.domain.Reason;
 import com.seedit.feature.reason.dto.response.ReasonResponse;
+import com.seedit.feature.trade.dto.response.VerifiedReasonResponse;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -22,5 +23,10 @@ public interface ReasonRepository {
 
     int deleteByUserId(@Param("userId") Long userId);
 
-    int updateVerified(@Param("userId") Long userId, @Param("rid") Long rid);
+    int updateVerified(@Param("userId") Long userId,
+                       @Param("rid") Long rid,
+                       @Param("sellTid") Long sellTid);
+
+    List<VerifiedReasonResponse> findByUserIdAndVerifiedTid(
+            @Param("userId") Long userId, @Param("tid") Long tid);
 }

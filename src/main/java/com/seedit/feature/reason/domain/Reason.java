@@ -20,4 +20,5 @@ public class Reason {
     private Boolean isVerified;
     private Boolean isDeleted;
     private LocalDateTime createdAt;
+    private Long verifiedTid;
 }
