@@ -22,6 +22,7 @@ public record TradeHistoryResponse (
         LocalDateTime tradeAt,
         String reasonTag,
         String reasonText,
+        boolean isVerified,
         SettlementStatus settlementStatus,
         LocalDate settleDate
 ){

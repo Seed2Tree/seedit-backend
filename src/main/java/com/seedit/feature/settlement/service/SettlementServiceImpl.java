@@ -13,6 +13,7 @@ import com.seedit.global.error.BusinessException;
 import com.seedit.global.error.ErrorCode;
 import com.seedit.global.util.BusinessDayUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +21,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SettlementServiceImpl implements SettlementService {
@@ -27,25 +29,24 @@ public class SettlementServiceImpl implements SettlementService {
     private final SettlementRepository settlementRepository;
     private final UserAccountRepository userAccountRepository;
     private final BalanceHistoryRepository balanceHistoryRepository;
-
     @Override
     @Transactional
     public void settleDue(LocalDate today) {
-        List<Settlement> dues = settlementRepository.findPendingDue(today); // status=PENDING AND settle_date<=today
+        List<Settlement> dues = settlementRepository.findPendingDue(today);
         for (Settlement s : dues) {
-            UserAccount u = userAccountRepository.findUserById(s.getUserId()).orElseThrow();
+            UserAccount u = userAccountRepository.findUserById(s.getUserId()).orElse(null);
+            if (u == null || u.getBalance() == null) {
+                log.warn("정산 건너뜀: settlementId={}, userId={} (계정 없음 또는 잔액 null)",
+                        s.getSettlementId(), s.getUserId(), u);
+                continue;   // PENDING으로 남아 다음 실행 때 재시도
+            }
             long newBalance = u.getBalance() + s.getAmount();
             userAccountRepository.updateBalance(u.getUserId(), newBalance);
-
-            settlementRepository.markSettled(s.getSettlementId(), LocalDateTime.now()); // status=SETTLED
-
+            settlementRepository.markSettled(s.getSettlementId(), LocalDateTime.now());
             balanceHistoryRepository.save(BalanceHistory.builder()
-                    .userId(u.getUserId())
-                    .amount(s.getAmount())
-                    .currentBalance(newBalance)
-                    .reasonType(TradeType.SELL)   // 또는 SETTLEMENT 타입 신설
-                    .createdAt(LocalDateTime.now())
-                    .build());
+                    .userId(u.getUserId()).amount(s.getAmount())
+                    .currentBalance(newBalance).reasonType(TradeType.SELL)
+                    .createdAt(LocalDateTime.now()).build());
         }
     }
 

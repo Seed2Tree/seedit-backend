@@ -4,13 +4,13 @@
 
 <mapper namespace="com.seedit.feature.settlement.repository.SettlementRepository">
 
-    <insert id="save" parameterType="com.seedit.feature.settlement.domain.Settlement"
+    <insert id="save" parameterType="Settlement"
             useGeneratedKeys="true" keyProperty="settlementId">
         INSERT INTO settlement (user_id, tid, amount, trade_date, settle_date, status, created_at)
         VALUES (#{userId}, #{tid}, #{amount}, #{tradeDate}, #{settleDate}, #{status}, #{createdAt})
     </insert>
 
-    <select id="findPendingDue" resultType="com.seedit.feature.settlement.domain.Settlement">
+    <select id="findPendingDue" resultType="Settlement">
         SELECT settlement_id, user_id, tid, amount, trade_date, settle_date, status, settled_at, created_at
         FROM settlement
         WHERE status = 'PENDING' AND settle_date &lt;= #{today}

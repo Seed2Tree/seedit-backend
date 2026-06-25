@@ -43,24 +43,30 @@
         is_deleted AS isDeleted,
         created_at AS createdAt
         FROM reason
-        WHERE user_id = #{userId} AND rid = {rid}
+        WHERE user_id = #{userId} AND rid = #{rid}
     </select>
+
+    <!-- 신규: 가설 검증 처리 -->
+    <update id="updateVerified">
+        UPDATE reason
+        SET is_verified = true
+        WHERE user_id = #{userId} AND rid = #{rid} AND is_deleted = false
+    </update>
 
     <!-- 가설 검증이 안된 주식에 대한 단건 조회 -->
     <select id="findByUserIdAndSid" resultType="Reason">
-        SELECT
-        r.rid,
-        r.user_id AS userId,
-        r.tid,
-        r.reason_type AS reasonType,
-        r.reason_date AS reasonDate,
-        r.reason_tag AS reasonTag,
-        r.reason_text AS reasonText,
-        r.is_verified AS isVerified,
-        r.is_deleted AS isDeleted,
-        r.created_at AS createdAt
-        FROM reason r LEFT JOIN trade t ON r.tid = t.tid
-        WHERE r.user_id = #{userId} AND t.sid = #{sid} AND r.is_verified = false
+        SELECT r.rid, r.user_id AS userId, r.tid, r.reason_type AS reasonType,
+        r.reason_date AS reasonDate, r.reason_tag AS reasonTag,
+        r.reason_text AS reasonText, r.is_verified AS isVerified,
+        r.is_deleted AS isDeleted, r.created_at AS createdAt
+        FROM reason r
+        JOIN trade t ON r.tid = t.tid
+        WHERE r.user_id = #{userId}
+        AND t.sid = #{sid}
+        AND r.is_deleted = false
+        AND r.reason_type = 'BUY'
+        AND r.is_verified = false
+        ORDER BY t.trade_at
     </select>
 
     <!-- 가설 작성 횟수 조회   -->

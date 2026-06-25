@@ -47,9 +47,11 @@
         name,
         birth,
         email,
-        role,
+        balance,
+        total_invested as totalInvested,
         created_at as createdAt,
-        updated_at as updatedAt
+        updated_at as updatedAt,
+        role
         FROM user_account
         WHERE user_id = #{userId}
     </select>

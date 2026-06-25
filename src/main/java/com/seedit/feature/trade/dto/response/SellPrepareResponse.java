@@ -25,9 +25,11 @@ public record SellPrepareResponse(
     ){}
 
     public record ReasonPrepareResponse(
-        TradeType reasonType, LocalDate reasonDate,
-        String reasonTag, String reasonText
+            Long rid, TradeType reasonType, LocalDate reasonDate,
+            String reasonTag, String reasonText, boolean isVerified
     ){}
+
+
 
     public record StockSummary(
         String companyName,
@@ -44,13 +46,16 @@ public record SellPrepareResponse(
                 portfolio.getAvgPrice(),
                 portfolio.getTotalAmount(),
                 portfolio.getUpdatedAt());
+
         List<ReasonPrepareResponse> reasonPrepareResponses = reasons.stream()
                 .filter(r -> !Boolean.TRUE.equals(r.getIsDeleted()))
                 .map(r -> new ReasonPrepareResponse(
+                        r.getRid(),
                         r.getReasonType(),
                         r.getReasonDate(),
                         r.getReasonTag(),
-                        r.getReasonText()))
+                        r.getReasonText(),
+                        Boolean.TRUE.equals(r.getIsVerified())))
                 .toList();
 
         StockSummary stockSummary = new StockSummary(

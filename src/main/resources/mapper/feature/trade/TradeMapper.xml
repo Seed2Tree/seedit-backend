@@ -25,8 +25,9 @@
         trade.total_amount as totalAmount,
         trade.remaining_balance as remainingBalance,
         trade.trade_at AS tradeAt,
-        NULL as reasonTag,
-        NULL as reasonText,
+        reason.reason_tag as reasonTag,
+        reason.reason_text as reasonText,
+        COALESCE(reason.is_verified, false) as isVerified,
         st.status          as settlementStatus,
         st.settle_date     as settleDate
         FROM trade
@@ -69,8 +70,9 @@
             trade.total_amount as totalAmount,
             trade.remaining_balance as remainingBalance,
             trade.trade_at AS tradeAt,
-            NULL as reasonTag,
-            NULL as reasonText,
+            reason.reason_tag as reasonTag,
+            reason.reason_text as reasonText,
+            COALESCE(reason.is_verified, false) as isVerified,
             st.status          as settlementStatus,
             st.settle_date     as settleDate
         FROM trade
@@ -109,8 +111,9 @@
             trade.total_amount  as totalAmount,
             trade.remaining_balance as remainingBalance,
             trade.trade_at      as tradeAt,
-            reason.reason_tag   as reasonTag,
-            reason.reason_text  as reasonText,
+            reason.reason_tag as reasonTag,
+            reason.reason_text as reasonText,
+            COALESCE(reason.is_verified, false) as isVerified,
             st.status          as settlementStatus,
             st.settle_date     as settleDate
         FROM trade
