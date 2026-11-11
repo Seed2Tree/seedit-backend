@@ -112,7 +112,7 @@ public class UserServiceImpl implements UserService{
     @Override
     @Transactional
     public UserAccount resetUser(String email) {
-        UserAccount userAccount = userAccountRepository.findUserByEmail(email)
+        UserAccount userAccount = userAccountRepository.findUserByEmailForUpdate(email)
                 .orElseThrow(() -> new BusinessException(ErrorCode.COMMON_NOT_FOUND,"해당 계정을 찾을 수 없습니다."));
         Long userId = userAccount.getUserId();
         // 정산 레포 초기화

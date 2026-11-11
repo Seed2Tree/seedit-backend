@@ -17,6 +17,10 @@ public interface UserAccountRepository {
 
     Optional<UserAccount> findUserByEmail(String email);
 
+    Optional<UserAccount> findUserByIdForUpdate(@Param("userId") Long userId);
+
+    Optional<UserAccount> findUserByEmailForUpdate(@Param("email") String email);
+
     int countByEmail(String email);
 
     int updateUser(UserAccount userAccount);

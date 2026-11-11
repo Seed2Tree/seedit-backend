@@ -62,7 +62,7 @@ public class TradeServiceImpl implements TradeService{
         // 체결 기준 시간을 비즈니스 로직 시작 시점에 고정
         LocalDateTime executionTime = LocalDateTime.now();
 
-        UserAccount userAccount = userAccountRepository.findUserByEmail(email)
+        UserAccount userAccount = userAccountRepository.findUserByEmailForUpdate(email)
                 .orElseThrow(() -> new BusinessException(ErrorCode.COMMON_NOT_FOUND,"사용자를 찾을 수 없습니다."));
 
         StockDetail stockDetail = stockRepository.findDetailByTicker(request.ticker());
@@ -159,7 +159,7 @@ public class TradeServiceImpl implements TradeService{
         // 체결 기준 시간을 비즈니스 로직 시작 시점에 고정
         LocalDateTime executionTime = LocalDateTime.now();
 
-        UserAccount userAccount = userAccountRepository.findUserByEmail(email)
+        UserAccount userAccount = userAccountRepository.findUserByEmailForUpdate(email)
                 .orElseThrow(() -> new BusinessException(ErrorCode.COMMON_NOT_FOUND,"사용자를 찾을 수 없습니다."));
 
         StockDetail stockDetail = stockRepository.findDetailByTicker(request.ticker());
