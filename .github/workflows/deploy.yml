@@ -5,7 +5,11 @@ on:
     branches: [ main ]
 
 jobs:
+  settlement-tests:
+    uses: ./.github/workflows/settlement-tests.yml
+
   deploy:
+    needs: settlement-tests
     runs-on: ubuntu-latest
 
     steps:

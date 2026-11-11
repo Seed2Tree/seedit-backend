@@ -77,6 +77,14 @@
         WHERE email = #{email}
     </select>
 
+    <!-- 잔액/투자 데이터 변경은 계정 행부터 잠근다. -->
+    <select id="findUserByIdForUpdate" resultType="UserAccount">
+        SELECT * FROM user_account WHERE user_id = #{userId} FOR UPDATE
+    </select>
+    <select id="findUserByEmailForUpdate" resultType="UserAccount">
+        SELECT * FROM user_account WHERE email = #{email} FOR UPDATE
+    </select>
+
     <!--
         2-4. 사용자 정보 수정
         userId를 기준으로 기존 사용자의 name, phone, address 값을 수정합니다.

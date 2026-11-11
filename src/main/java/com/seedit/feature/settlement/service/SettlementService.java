@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface SettlementService {
+    void retryDue(LocalDate today);
     void settleDue(LocalDate today);
     void reserve(Long userId, Long tid, long amount, LocalDate tradeDate);
     List<SettlementResponse> getMySettlements(String email, SettlementStatus status);
