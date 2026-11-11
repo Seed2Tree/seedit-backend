@@ -1,0 +1,40 @@
+name: Settlement Regression Tests
+
+on:
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  settlement-tests:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: settlement-test-only
+          MYSQL_DATABASE: seedit_settlement_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -psettlement-test-only"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    env:
+      SETTLEMENT_TEST_JDBC_URL: jdbc:mysql://127.0.0.1:3306/seedit_settlement_test?serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true&useSSL=false
+      SETTLEMENT_TEST_DB_USER: root
+      SETTLEMENT_TEST_DB_PASSWORD: settlement-test-only
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+      - name: Run settlement unit and MySQL integration tests
+        run: |
+          chmod +x ./mvnw
+          ./mvnw -B -Dtest=SettlementBatchTest,SettlementMySqlTest test
