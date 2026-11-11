@@ -10,20 +10,49 @@
         VALUES (#{userId}, #{tid}, #{amount}, #{tradeDate}, #{settleDate}, #{status}, #{createdAt})
     </insert>
 
-    <select id="findPendingDue" resultType="Settlement">
-        SELECT settlement_id, user_id, tid, amount, trade_date, settle_date, status, settled_at, created_at
+    <select id="findDuePage" resultType="Settlement">
+        SELECT *
         FROM settlement
         WHERE status = 'PENDING' AND settle_date &lt;= #{today}
+          AND settlement_id &gt; #{afterId}
+          AND (next_retry_at IS NULL OR next_retry_at &lt;= #{now})
+          AND (attempt_token IS NULL OR lease_until &lt;= #{now})
+        <!-- 장애 복구 뒤 미선점 건도 회수하되 당일 최초 정산은 00:10부터 실행한다. -->
+        <if test="retryOnly">
+            AND (attempt_count &gt; 0 OR settle_date &lt; #{today}
+                 OR #{now} &gt;= TIMESTAMP(#{today}, '00:10:00'))
+        </if>
+        ORDER BY settlement_id LIMIT #{limit}
     </select>
 
+    <select id="findByIdForUpdate" resultType="Settlement">
+        SELECT * FROM settlement WHERE settlement_id = #{settlementId} FOR UPDATE
+    </select>
+
+    <update id="claim">
+        UPDATE settlement
+        SET attempt_token = #{token}, lease_until = #{leaseUntil},
+            attempt_count = attempt_count + 1, next_retry_at = NULL
+        WHERE settlement_id = #{settlementId} AND status = 'PENDING'
+          AND attempt_token IS NULL AND attempt_count &lt; 4
+    </update>
+
     <update id="markSettled">
-        UPDATE settlement SET status = 'SETTLED', settled_at = #{now}
-        WHERE settlement_id = #{settlementId}
+        UPDATE settlement SET status = 'SETTLED', settled_at = #{now},
+            attempt_token = NULL, lease_until = NULL, next_retry_at = NULL
+        WHERE settlement_id = #{settlementId} AND status = 'PENDING' AND attempt_token = #{token}
+    </update>
+
+    <update id="recordFailure">
+        UPDATE settlement SET status = #{status}, next_retry_at = #{nextRetryAt},
+            last_error_code = #{errorCode}, last_failed_at = #{now},
+            attempt_token = NULL, lease_until = NULL
+        WHERE settlement_id = #{settlementId} AND status = 'PENDING' AND attempt_token = #{token}
     </update>
 
     <select id="sumPendingByUser" resultType="long">
         SELECT COALESCE(SUM(amount), 0) FROM settlement
-        WHERE user_id = #{userId} AND status = 'PENDING'
+        WHERE user_id = #{userId} AND status IN ('PENDING', 'FAILED')
     </select>
 
     <select id="findByUserId" resultType="com.seedit.feature.settlement.dto.response.SettlementResponse">

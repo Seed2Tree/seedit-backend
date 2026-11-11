@@ -158,11 +158,18 @@ CREATE TABLE settlement (
   amount     BIGINT NOT NULL,                 -- 정산 예정 금액(매도대금)
   trade_date DATE   NOT NULL,
   settle_date DATE  NOT NULL,                 -- 영업일 +2
-  status     VARCHAR(10) NOT NULL DEFAULT 'PENDING',  -- PENDING / SETTLED
+  status     VARCHAR(10) NOT NULL DEFAULT 'PENDING',  -- PENDING / SETTLED / FAILED
+  attempt_count INT NOT NULL DEFAULT 0,
+  next_retry_at DATETIME,
+  attempt_token VARCHAR(36),
+  lease_until DATETIME,
+  last_error_code VARCHAR(64),
+  last_failed_at DATETIME,
   settled_at DATETIME,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES user_account(user_id) ON DELETE CASCADE,
-  INDEX idx_settlement_pending (status, settle_date)   -- 스케줄러 조회용
+  INDEX idx_settlement_pending (status, settle_date),
+  INDEX idx_settlement_retry (status, next_retry_at, settlement_id)
 );
 
 CREATE TABLE reason (

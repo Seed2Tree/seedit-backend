@@ -9,29 +9,37 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-import java.time.ZoneId;
+import java.time.Clock;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class SettlementScheduler {
     private final SettlementService settlementService;
+    private final Clock settlementClock;
 
     @Scheduled(cron = "0 10 0 * * *", zone = "Asia/Seoul")
     public void settle() {
-        runSafely();
+        runSafely(false);
     }
 
     @EventListener(ApplicationReadyEvent.class)
     public void catchUpOnStartup() {
-        runSafely();
+        runSafely(false);
     }
 
-    private void runSafely() {
+    @Scheduled(cron = "0 * * * * *", zone = "Asia/Seoul")
+    public void retry() {
+        runSafely(true);
+    }
+
+    private void runSafely(boolean retryOnly) {
         try {
-            settlementService.settleDue(LocalDate.now(ZoneId.of("Asia/Seoul")));
+            LocalDate today = LocalDate.now(settlementClock);
+            if (retryOnly) settlementService.retryDue(today);
+            else settlementService.settleDue(today);
         } catch (Exception e) {
-            log.error("정산 배치 실패", e);
+            log.error("SETTLEMENT_BATCH_FAILED retryOnly={}", retryOnly, e);
         }
     }
 }
