@@ -6,10 +6,6 @@ import com.seedit.feature.stock.external.DailyCandle;
 import com.seedit.feature.stock.external.DailyStockPrice;
 import com.seedit.feature.stock.external.StockPriceProvider;
 import com.seedit.feature.stock.repository.StockRepository;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDate;
-import java.util.Comparator;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +29,7 @@ public class StockPriceSyncService {
 
     private final StockRepository stockMapper;
     private final StockPriceProvider priceProvider;
+    private final StockHistoryReplacer historyReplacer;
 
     /**
      * @param marketClosed true면 장 마감 후 호출 → 현재가를 종가로 확정 저장
@@ -81,7 +78,8 @@ public class StockPriceSyncService {
         for (Stock stock : stocks) {
             try {
                 List<DailyCandle> candles = priceProvider.fetchDailyHistory(stock.getTicker(), days);
-                int inserted = replaceHistory(stock.getSid(), candles);
+                // 외부 조회는 트랜잭션 밖, 교체만 종목 단위 트랜잭션 (실패 시 이 종목만 롤백)
+                int inserted = historyReplacer.replace(stock.getSid(), candles);
                 log.info("백필 완료 [{}]: {}건", stock.getTicker(), inserted);
                 success++;
             } catch (Exception e) {
@@ -93,31 +91,6 @@ public class StockPriceSyncService {
 
         log.info("백필 전체 완료: 성공 {} / 실패 {}", success, failed.size());
         return new StockSyncResponse(stocks.size(), success, failed);
-    }
-
-    /** 한 종목의 히스토리를 통째로 교체 (삭제+삽입이 하나의 트랜잭션) */
-    @Transactional
-    protected int replaceHistory(Long sid, List<DailyCandle> candles) {
-        LocalDate today = LocalDate.now();
-        // 과거 → 최신 순으로 정렬 후, 직전 캔들 종가로 prev_close 채움
-        List<DailyCandle> sorted = candles.stream()
-                .filter(c -> c.getTradeDate().isBefore(today))   // 오늘은 syncAll 담당
-                .sorted(Comparator.comparing(DailyCandle::getTradeDate))
-                .toList();
-
-        List<DailyCandle> rows = new ArrayList<>(sorted.size());
-        Long prevClose = null;
-        for (DailyCandle c : sorted) {
-            rows.add(c.toBuilder().prevClose(prevClose).build());
-            prevClose = c.getClose();
-        }
-
-        stockMapper.deleteHistoryBySid(sid);
-        // 한 번에 너무 큰 INSERT 를 피하기 위해 500건씩 나눠 저장
-        for (int i = 0; i < rows.size(); i += 500) {
-            stockMapper.insertHistoryBatch(sid, rows.subList(i, Math.min(i + 500, rows.size())));
-        }
-        return rows.size();
     }
 
     /** 전부 null이면 UPDATE 자체를 건너뜀 (빈 SET 절 방지) */
